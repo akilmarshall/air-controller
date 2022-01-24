@@ -378,6 +378,7 @@ PROJECT_SOURCE_FILES ?= \
 	ray_animation.cpp \
 	escape.cpp \
 	credit.cpp \
+	util.cpp \
 
 # Define all object files from source files
 OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))

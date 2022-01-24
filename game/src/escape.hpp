@@ -2,27 +2,18 @@
 #define ESCAPE_HPP
 #include <array>
 #include <cmath>
+#include <iostream>
 
 #include "raylib.h"
 #include "scene.hpp"
 
 enum CameraMove {
-    MOVE_FRONT,
+    MOVE_FRONT = 0,
     MOVE_BACK,
     MOVE_RIGHT,
     MOVE_LEFT,
     MOVE_UP,
-    MOVE_DOWN,
-};
-struct CameraData {
-    float targetDistance;
-    float playerEyesPosition;
-    Vector2 angle;
-    Vector2 previousMousePosition;
-    std::array<int, 6> moveControl;
-    int smoothZoomControl;
-    int altControl;
-    int panControl;
+    MOVE_DOWN
 };
 class EscapeScene : public Scene {
    private:
@@ -30,15 +21,22 @@ class EscapeScene : public Scene {
     int frame_counter;
 
     Camera camera;
-    CameraData CAMERA;
-    float PLAYER_MOVEMENT_SENSITIVITY;
-    float CAMERA_MOUSE_MOVE_SENSITIVITY;
-    float MIN_CLAMP;
-    float MAX_CLAMP;
-    float STEP_TRIGONOMETRIC_DIVIDER;
-    float STEP_DIVIDER;
-    float WAVING_DIVIDER;
-    float PANNING_DIVIDER;
+    float targetDistance;
+    float playerEyesPosition;
+    Vector2 angle;
+    Vector2 previousMousePosition;
+    std::array<int, 6> moveControl = {'W', 'S', 'D', 'A', 'E', 'Q'};
+    float MIN_CLAMP = 89.f;
+    float MAX_CLAMP = -89.f;
+    float STEP_TRIGONOMETRIC_DIVIDER = 8.f;
+    float STEP_DIVIDER = 30.f;
+    float WAVING_DIVIDER = 200.f;
+    float PANNING_DIVIDER = 5.1;
+    float PLAYER_MOVEMENT_SENSITIVITY = 20.f;
+    float CAMERA_MOVEMENT_SENSITIVITY = 0.003f;
+
+    void setupCamera();
+    void updateCamera();
 
    public:
     void init();

@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
     InitWindow(screenWidth, screenHeight, "raylib cpp template");
 
     // register Scene objects with their enum instance
-    sm.scenes[SPLASH] = make_unique<Splash>();
     sm.scenes[RAYANIM] = make_unique<RayAnimation>();
+    sm.scenes[SPLASH] = make_unique<Splash>();
     sm.scenes[ESCAPE] = make_unique<EscapeScene>();
     sm.scenes[CREDIT] = make_unique<CreditScene>();
 

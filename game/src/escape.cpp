@@ -2,109 +2,77 @@
 
 // EscapeScene implemenation
 // private
-// public
-void EscapeScene::init() {
-    done_ = false;
+void EscapeScene::setupCamera() {
+    float dx = camera.target.x - camera.position.x;
+    float dy = camera.target.y - camera.position.y;
+    float dz = camera.target.z - camera.position.z;
 
-    frame_counter = 0;
-
-    // camera initial parameters
-    camera = {0};
-    camera.position = Vector3{4.f, 2.f, 4.f};
-    camera.target = Vector3{0.f, 1.8f, 0.f};
-    camera.up = Vector3{0.f, 1.f, 0.f};
-    camera.fovy = 60.f;
-    camera.projection = CAMERA_PERSPECTIVE;
-    SetCameraMode(camera, CAMERA_FIRST_PERSON);
-
-    // camera state context data
-    CAMERA.targetDistance = 0.f;
-    CAMERA.playerEyesPosition = 1.85f;
-    CAMERA.angle = {0};
-    CAMERA.previousMousePosition = {0};
-    CAMERA.moveControl = {'W', 'S', 'D', 'A', 'E', 'Q'};
-    CAMERA.smoothZoomControl = 341;
-    CAMERA.altControl = 342;
-    CAMERA.panControl = 2;
-
-    PLAYER_MOVEMENT_SENSITIVITY = 20.f;
-    CAMERA_MOUSE_MOVE_SENSITIVITY = 0.003f;
-    MIN_CLAMP = 89.f;
-    MAX_CLAMP = -89.f;
-    STEP_TRIGONOMETRIC_DIVIDER = 8.f;
-    STEP_DIVIDER = 30.f;
-    WAVING_DIVIDER = 200.f;
-    PANNING_DIVIDER = 5.1f;
+    targetDistance = sqrtf((dx * dx) + (dy * dy) + (dz * dz));
+    // camera angle in plane XZ (0 aligned with Z, move positive CCW)
+    angle.x = atan2f(dx, dz);
+    // cameara angle in plane XY (0 aligned with X, move positive CW)
+    angle.y = atan2f(dy, sqrtf((dx * dx) + (dz * dz)));
+    // init player eyes to camera.y
+    playerEyesPosition = camera.position.y;
+    previousMousePosition = GetMousePosition();
+    DisableCursor();
 }
-void EscapeScene::update() {
-    frame_counter++;
-    if (IsMouseButtonPressed(0)) {
-        /* done_ = true; */
-    }
-
-    UpdateCamera(&camera);
-    // update camera
-    // data setup
-    /*
+void EscapeScene::updateCamera() {
     int swingCounter = 0;
+    Vector2 mousePositionDelta = {0.f, 0.f};
+    Vector2 mousePosition = GetMousePosition();
     std::array<bool, 6> direction = {
-        IsKeyDown(CAMERA.moveControl[MOVE_FRONT]),
-        IsKeyDown(CAMERA.moveControl[MOVE_BACK]),
-        IsKeyDown(CAMERA.moveControl[MOVE_RIGHT]),
-        IsKeyDown(CAMERA.moveControl[MOVE_LEFT]),
-        IsKeyDown(CAMERA.moveControl[MOVE_UP]),
-        IsKeyDown(CAMERA.moveControl[MOVE_DOWN]),
+        IsKeyDown(moveControl[MOVE_FRONT]), IsKeyDown(moveControl[MOVE_BACK]),
+        IsKeyDown(moveControl[MOVE_RIGHT]), IsKeyDown(moveControl[MOVE_LEFT]),
+        IsKeyDown(moveControl[MOVE_UP]),    IsKeyDown(moveControl[MOVE_DOWN]),
     };
-    auto mousePositionDelta = Vector2{0.f, 0.f};
-    auto mousePosition = GetMousePosition();
-    mousePositionDelta.x = mousePosition.x - CAMERA.previousMousePosition.x;
-    mousePositionDelta.y = mousePosition.y - CAMERA.previousMousePosition.y;
-    CAMERA.previousMousePosition = mousePosition;
-    // first person control implemenation
-    camera.position.x += (sinf(CAMERA.angle.x) * direction[MOVE_BACK] -
-                          sinf(CAMERA.angle.x) * direction[MOVE_FRONT] -
-                          cosf(CAMERA.angle.x) * direction[MOVE_LEFT] +
-                          cosf(CAMERA.angle.x) * direction[MOVE_RIGHT]) /
+    mousePositionDelta.x = mousePosition.x - previousMousePosition.x;
+    mousePositionDelta.y = mousePosition.y - previousMousePosition.y;
+    previousMousePosition = mousePosition;  // necessary?
+
+    camera.position.x += (sinf(angle.x) * direction[MOVE_BACK] -
+                          sinf(angle.x) * direction[MOVE_FRONT] -
+                          cosf(angle.x) * direction[MOVE_LEFT] +
+                          cosf(angle.x) * direction[MOVE_RIGHT]) /
                          PLAYER_MOVEMENT_SENSITIVITY;
 
     camera.position.y +=
-        (sinf(CAMERA.angle.y) * direction[MOVE_FRONT] -
-         sinf(CAMERA.angle.y) * direction[MOVE_BACK] +
-         1.f * direction[MOVE_UP] - 1.f * direction[MOVE_DOWN]) /
+        (sinf(angle.y) * direction[MOVE_FRONT] -
+         sinf(angle.y) * direction[MOVE_BACK] + 1.0f * direction[MOVE_UP] -
+         1.0f * direction[MOVE_DOWN]) /
         PLAYER_MOVEMENT_SENSITIVITY;
 
-    camera.position.z += (cosf(CAMERA.angle.x) * direction[MOVE_BACK] -
-                          cosf(CAMERA.angle.x) * direction[MOVE_FRONT] +
-                          sinf(CAMERA.angle.x) * direction[MOVE_LEFT] -
-                          sinf(CAMERA.angle.x) * direction[MOVE_RIGHT]) /
+    camera.position.z += (cosf(angle.x) * direction[MOVE_BACK] -
+                          cosf(angle.x) * direction[MOVE_FRONT] +
+                          sinf(angle.x) * direction[MOVE_LEFT] -
+                          sinf(angle.x) * direction[MOVE_RIGHT]) /
                          PLAYER_MOVEMENT_SENSITIVITY;
-
     // Camera orientation calculation
-    CAMERA.angle.x += (mousePositionDelta.x * -CAMERA_MOUSE_MOVE_SENSITIVITY);
-    CAMERA.angle.y += (mousePositionDelta.y * -CAMERA_MOUSE_MOVE_SENSITIVITY);
+    angle.x += (mousePositionDelta.x * -CAMERA_MOVEMENT_SENSITIVITY);
+    angle.y += (mousePositionDelta.y * -CAMERA_MOVEMENT_SENSITIVITY);
 
     // Angle clamp
-    if (CAMERA.angle.y > MIN_CLAMP * DEG2RAD)
-        CAMERA.angle.y = MIN_CLAMP * DEG2RAD;
-    else if (CAMERA.angle.y < MAX_CLAMP * DEG2RAD)
-        CAMERA.angle.y = MAX_CLAMP * DEG2RAD;
+    if (angle.y > MIN_CLAMP * DEG2RAD)
+        angle.y = MIN_CLAMP * DEG2RAD;
+    else if (angle.y < MAX_CLAMP * DEG2RAD)
+        angle.y = MAX_CLAMP * DEG2RAD;
 
     // Calculate translation matrix
     Matrix matTranslation = {
-        1.f, 0.f, 0.f, 0.f, 0.f, 1.f,
-        0.f, 0.f, 0.f, 0.f, 1.f, (CAMERA.targetDistance / PANNING_DIVIDER),
-        0.f, 0.f, 0.f, 1.f};
+        1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 1.0f, (targetDistance / PANNING_DIVIDER),
+        0.0f, 0.0f, 0.0f, 1.0f};
 
     // Calculate rotation matrix
-    Matrix matRotation = {1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
-                          0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f};
+    Matrix matRotation = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
-    float cosz = cosf(0.f);
-    float sinz = sinf(0.f);
-    float cosy = cosf(-(PI * 2 - CAMERA.angle.x));
-    float siny = sinf(-(PI * 2 - CAMERA.angle.x));
-    float cosx = cosf(-(PI * 2 - CAMERA.angle.y));
-    float sinx = sinf(-(PI * 2 - CAMERA.angle.y));
+    float cosz = cosf(0.0f);
+    float sinz = sinf(0.0f);
+    float cosy = cosf(-(PI * 2 - angle.x));
+    float siny = sinf(-(PI * 2 - angle.x));
+    float cosx = cosf(-(PI * 2 - angle.y));
+    float sinx = sinf(-(PI * 2 - angle.y));
 
     matRotation.m0 = cosz * cosy;
     matRotation.m4 = (cosz * siny * sinx) - (sinz * cosx);
@@ -198,14 +166,39 @@ void EscapeScene::update() {
     // NOTE: On CAMERA_FIRST_PERSON player Y-movement is limited to player 'eyes
     // position'
     camera.position.y =
-        CAMERA.playerEyesPosition -
+        playerEyesPosition -
         sinf(swingCounter / STEP_TRIGONOMETRIC_DIVIDER) / STEP_DIVIDER;
 
     camera.up.x =
         sinf(swingCounter / (STEP_TRIGONOMETRIC_DIVIDER * 2)) / WAVING_DIVIDER;
     camera.up.z =
         -sinf(swingCounter / (STEP_TRIGONOMETRIC_DIVIDER * 2)) / WAVING_DIVIDER;
-    */
+}
+// public
+void EscapeScene::init() {
+    done_ = false;
+
+    frame_counter = 0;
+
+    // camera initial parameters
+    camera = {0};
+    camera.position = Vector3{4.f, 2.f, 4.f};
+    camera.target = Vector3{0.f, 1.8f, 0.f};
+    camera.up = Vector3{0.f, 1.f, 0.f};
+    camera.fovy = 60.f;
+    camera.projection = CAMERA_PERSPECTIVE;
+    setupCamera();
+}
+void EscapeScene::update() {
+    frame_counter++;
+    if (IsMouseButtonPressed(0)) {
+        /* done_ = true; */
+    }
+    /* UpdateCamera(&camera); */
+    updateCamera();
+    /* if (IsKeyPressed(KEY_SPACE)) { */
+    /*     camera.position.x += 1; */
+    /* } */
 }
 void EscapeScene::draw() {
     ClearBackground(RAYWHITE);
