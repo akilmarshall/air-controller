@@ -93,10 +93,60 @@
       "-DPLATFORM_DESKTOP",
       "-o",
       "game",
+      "escape.cpp"
+    ],
+    "directory": "/home/akil/Project/raylib/raylib-5k-jam/game/src",
+    "file": "/home/akil/Project/raylib/raylib-5k-jam/game/src/escape.cpp",
+    "output": "/home/akil/Project/raylib/raylib-5k-jam/game/src/game"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++20",
+      "-Wall",
+      "-Wno-missing-braces",
+      "-Wunused-result",
+      "-D_DEFAULT_SOURCE",
+      "-O2",
+      "-D_DEFAULT_SOURCE",
+      "-I.",
+      "-I/home/akil/Project/raylib/raylib-5k-jam/game/src",
+      "-I/home/akil/Project/raylib/raylib-5k-jam/game/src/external",
+      "-I/home/akil/Project/raylib/raylib-5k-jam/game/src/extras",
+      "-I/usr/include",
+      "-DPLATFORM_DESKTOP",
+      "-o",
+      "game",
       "credit.cpp"
     ],
     "directory": "/home/akil/Project/raylib/raylib-5k-jam/game/src",
     "file": "/home/akil/Project/raylib/raylib-5k-jam/game/src/credit.cpp",
+    "output": "/home/akil/Project/raylib/raylib-5k-jam/game/src/game"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-std=c++20",
+      "-Wall",
+      "-Wno-missing-braces",
+      "-Wunused-result",
+      "-D_DEFAULT_SOURCE",
+      "-O2",
+      "-D_DEFAULT_SOURCE",
+      "-I.",
+      "-I/home/akil/Project/raylib/raylib-5k-jam/game/src",
+      "-I/home/akil/Project/raylib/raylib-5k-jam/game/src/external",
+      "-I/home/akil/Project/raylib/raylib-5k-jam/game/src/extras",
+      "-I/usr/include",
+      "-DPLATFORM_DESKTOP",
+      "-o",
+      "game",
+      "util.cpp"
+    ],
+    "directory": "/home/akil/Project/raylib/raylib-5k-jam/game/src",
+    "file": "/home/akil/Project/raylib/raylib-5k-jam/game/src/util.cpp",
     "output": "/home/akil/Project/raylib/raylib-5k-jam/game/src/game"
   }
 ]

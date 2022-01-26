@@ -54,7 +54,7 @@ USE_WAYLAND_DISPLAY   ?= FALSE
 BUILD_WEB_ASYNCIFY    ?= FALSE
 BUILD_WEB_SHELL       ?= minshell.html
 BUILD_WEB_HEAP_SIZE   ?= 134217728
-BUILD_WEB_RESOURCES   ?= FALSE
+BUILD_WEB_RESOURCES   ?= TRUE
 BUILD_WEB_RESOURCES_PATH  ?= resources
 
 # Use cross-compiler for PLATFORM_RPI
@@ -378,7 +378,6 @@ PROJECT_SOURCE_FILES ?= \
 	ray_animation.cpp \
 	escape.cpp \
 	credit.cpp \
-	util.cpp \
 
 # Define all object files from source files
 OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
