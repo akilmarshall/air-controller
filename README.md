@@ -14,9 +14,9 @@ _Copyright (c) 2014-2022 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 -----------------------------------
 
-## $(Game Title)
+## Air Controller
 
-![$(Game Title)](screenshots/screenshot000.png "$(Game Title)")
+![Air Controller](screenshots/screenshot000.png "$(Game Title)")
 
 ### Description
 
