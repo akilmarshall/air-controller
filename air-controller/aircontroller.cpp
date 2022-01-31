@@ -1,5 +1,9 @@
-#include "aircontroller.hpp"
+#include "api.hpp"
+#include "control.hpp"
+#include "data.hpp"
+/* #include "aircontroller.hpp" */
 
+/*
 // AirControllerScene implementation
 // private
 void AirControllerScene::drawLighting() {
@@ -157,12 +161,12 @@ void AirControllerScene::drawPlanesInAir() {
         auto A = selected_plane && selected_plane.value() == flight_id;
         auto B = highlight_plane && highlight_plane.value() == flight_id;
         if (A || B) {
-            /* DrawTexture(texture, pos.x, pos.y, WHITE); */
+            // DrawTexture(texture, pos.x, pos.y, WHITE);
             Rectangle source{0.f, 0.f, 32.f, 32.f};
             Rectangle dest{pos.x - 6, pos.y - 6, 50, 50};
             DrawTexturePro(texture, source, dest, Vector2{8.f, 8.f}, 0.f,
                            WHITE);
-            /* DrawTexture(texture, pos.x, pos.y, highlight); */
+            // DrawTexture(texture, pos.x, pos.y, highlight);
         } else {
             DrawTexture(texture, pos.x, pos.y, WHITE);
         }
@@ -200,7 +204,7 @@ void AirControllerScene::drawAprons() {
             c = DARKPURPLE;
         }
         DrawTexture(flag_texture, position.x - 25, position.y + 4, c);
-        /* DrawRectangleLines(position.x - 28, position.y + 5, 20, 20, RED); */
+        // DrawRectangleLines(position.x - 28, position.y + 5, 20, 20, RED);
     }
 }
 void AirControllerScene::drawTime() {
@@ -296,8 +300,8 @@ void AirControllerScene::drawSchedule() {
         DrawText("Flight #", 60.f, y - 40, 20, GOLD);
         DrawText("Arrival", 190.f, y - 40, 20, GOLD);
         DrawText("Departure", 310.f, y - 40, 20, GOLD);
-        /* DrawRectangleLines(450.f, y - 40, 16, 16, RED); */  // sprite
-                                                               // position
+        //  DrawRectangleLines(450.f, y - 40, 16, 16, RED);   // sprite
+        // position
         DrawRectangle(60.f, y - 15, x - 20, 4, GOLD);
         for (int i = 1; auto &flight : flight_schedule) {
             auto &[num, arrival, departure, apron, texture_id, staged, done] =
@@ -527,46 +531,52 @@ std::vector<Flight> AirControllerScene::generateScheduleOneShot() {
 
     return schedule;
 }
-// public
+*/
 void AirControllerScene::init() {
     done_ = false;
     frame_counter = 0;
     minute = 0;
     hour = 0;
-    gui = GUI{Rectangle{600.f, 525.f, 148.f, 36.f}, Vector2{606.f, 530.f},
-              false, false};
-    background = LoadTexture("resources/ito.png");
-    generatePlanes();
-    generateAprons();
-    loadDigitTextures();
-
-    // initialize random stuff once
-    std::random_device rd;
-    /* std::mt19937 gen(rd()); */
-    gen = std::mt19937{rd()};
-    flight_num_gen = uniform_int_distribution<int>{100, 999};
-    arrival_time_minute_gen = uniform_int_distribution<int>{0, 59};
-    /* arrival_time_hour_gen = uniform_int_distribution<int>{0, 8}; */
-    refuel_time_gen = uniform_int_distribution<int>{15, 60};  // time in minutes
-
-    apron_gen = uniform_int_distribution<int>{0, NUMBER_OF_APRONS - 1};
-    // generate flight schedule
-    /* flight_schedule = generateSchedule(10); */
-    flight_schedule = generateScheduleOneShot();
-    /* flight_schedule.push_back(Flight{0, 69, 420, 0, 0}); */
-    flag_texture = LoadTexture("resources/flag.png");
     good = 0;
     ok = 0;
     bad = 0;
-    over = false;
+    background_id = 0;  // in the future this is perhaps a descriptive enum
+    air = Vector2{125.f, 125.f};
+    air_radius = 100.f;
+    air_rotation_speed = 0.006f;
+    apron_position = Vector2{570.f, 420.f};
+
+    // initialize random stuff once
+    std::random_device rd;
+    gen = mt19937{rd()};
+    flight_num_gen = uniform_int_distribution<int>{flight_number_range.first,
+                                                   flight_number_range.second};
+    arrival_time_minute_gen = uniform_int_distribution<int>{
+        arrival_time_minute_range.first, arrival_time_minute_range.second};
+    refuel_time_minute_gen = uniform_int_distribution<int>{
+        refuel_time_minute_range.first, refuel_time_minute_range.second};
+    apron_id_gen = uniform_int_distribution<int>{
+        0,
+        apron_count -
+            1};  // aprons cannot be added during between init and unload calls
+    plane_texture_gen = uniform_int_distribution<int>{0, 11};
+
+    // generate flight schedule
+    generateFlightSetA();
+    // buttons
+    buttons.clear();
+    buttons.push_back(Button{.id = 0,
+                             .region = Rectangle{600.f, 525.f, 148.f, 36.f},
+                             .name = "schedule button",
+                             .text = "Schedule",
+                             .fontsize = 30,
+                             .active = false});
 }
 void AirControllerScene::update() {
     ++frame_counter;
     updateTime();
-    processFlight();
-    auto mousePos = GetMousePosition();
-    updateGui(mousePos);
-    highlight_plane = getPlane(mousePos);
+    updateFlights();
+    processUserInput();
 }
 void AirControllerScene::draw() {
     drawLighting();
