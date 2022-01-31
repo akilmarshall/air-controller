@@ -1,3 +1,9 @@
+*.html
+*.js
+*.js
+resources
+*.json
+*.Android
 # Prerequisites
 *.d
 
