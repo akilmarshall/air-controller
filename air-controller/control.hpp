@@ -12,21 +12,23 @@
 #include "raylib.h"
 
 using std::array;
-
-// control
-void processUserInput();
+namespace control {
 
 // state
-array<Sprite, 11> loadPlaneSprites();
-array<Sprite, 10> loadDigitSprites();
-array<Sprite, 1> loadBackgroundSprites();
-Sprite loadODotSprite();
-Sprite loadFlagSprite();
-Sprite loadApronSprite();
+namespace state {
+void processUserInput();
+array<data::Sprite, 11> loadPlaneSprites();
+array<data::Sprite, 10> loadDigitSprites();
+array<data::Sprite, 1> loadBackgroundSprites();
+array<data::Sprite, 1> loadApronSprites();
+array<data::Sprite, 1> loadFlagSprites();
+data::Sprite loadODotSprite();
 void unloadPlaneSprites();
 void unloadDigitSprites();
 void unloadBackgroundSprites();
+void unloadFlagSprites();
+void unloadApronSprites();
 void unloadODotSprite();
-void unloadFlagSprite();
-void unloadApronSprite();
+}  // namespace state
+}  // namespace control
 #endif

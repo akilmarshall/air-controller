@@ -15,24 +15,25 @@
 
 int main(int argc, char *argv[]) {
     // load game assets
-    plane_sprites = loadPlaneSprites();
-    digit_sprites = loadDigitSprites();
-    background_sprites = loadBackgroundSprites();
-    odot_sprite = loadODotSprite();
-    flag_sprite = loadFlagSprite();
-    // apron_sprite = loadApronSprite();
+    data::plane_sprites = control::state::loadPlaneSprites();
+    data::digit_sprites = control::state::loadDigitSprites();
+    data::background_sprites = control::state::loadBackgroundSprites();
+    data::odot_sprite = control::state::loadODotSprite();
+    data::flag_sprites = control::state::loadFlagSprites();
+    /* data::apron_sprites = control::state::loadApronSprites(); */
 
-    InitWindow(screen_width, screen_height, "Air Controller");
+    InitWindow(data::screen_width, data::screen_height, "Air Controller");
 
     // register Scene objects with their enum instance
     /* scene_manager.scenes[RAYANIM] = make_unique<RayAnimation>(); */
     /* scene_manager.scenes[SPLASH] = make_unique<Splash>(); */
-    scene_manager.scenes[AIRCONTROLLER] = make_unique<AirControllerScene>();
+    data::scene_manager.scenes[data::AIRCONTROLLER] =
+        make_unique<AirControllerScene>();
 
     /* scene_manager.scenes[CREDIT] = make_unique<CreditScene>(); */
 
     // set and initialize the initial Scene
-    scene_manager.init(AIRCONTROLLER);
+    scene_manager.init(data::AIRCONTROLLER);
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(step, FPS, 1);
@@ -42,15 +43,17 @@ int main(int argc, char *argv[]) {
     // Main game loop
     while (!WindowShouldClose())  // Detect window close button or ESC key
     {
-        scene_manager.Step();
+        data::scene_manager.Step();
     }
 #endif
     // De-Initialization
-    scene_manager.unload();
-    unloadPlaneSprites();
-    unloadDigitSprites();
-    unloadBackgroundSprites();
-    unloadODotSprite();
+    data::scene_manager.unload();
+    control::state::unloadPlaneSprites();
+    control::state::unloadDigitSprites();
+    control::state::unloadBackgroundSprites();
+    control::state::unloadFlagSprites();
+    control::state::unloadApronSprites();
+    control::state::unloadODotSprite();
     CloseWindow();  // Close window and OpenGL context
     return 0;
 }

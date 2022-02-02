@@ -1,20 +1,19 @@
 #include "logic.hpp"
 
-bool showFlight(Flight flight) {
+bool showFlight(data::Flight flight) {
     switch (flight.status) {
-        case PRE: {
+        case data::PRE: {
             // flights are shown an hour before they arrive
             return flight.arrival_time <=
-                   (60 * air_controller_scene.MIN) +
-                       air_controller_scene.frame_counter;
+                   (60 * data::ACScene::MIN) + data::ACScene::frame_counter;
         } break;
-        case AIR: {
+        case data::AIR: {
             return true;
         } break;
-        case APRON: {
+        case data::APRON: {
             return true;
         } break;
-        case DONE: {
+        case data::DONE: {
             return false;
         } break;
     }

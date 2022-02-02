@@ -532,65 +532,76 @@ std::vector<Flight> AirControllerScene::generateScheduleOneShot() {
     return schedule;
 }
 */
-void AirControllerScene::init() {
-    done_ = false;
-    frame_counter = 0;
-    minute = 0;
-    hour = 0;
-    good = 0;
-    ok = 0;
-    bad = 0;
-    background_id = 0;  // in the future this is perhaps a descriptive enum
-    air = Vector2{125.f, 125.f};
-    air_radius = 100.f;
-    air_rotation_speed = 0.006f;
-    apron_position = Vector2{570.f, 420.f};
+void api::ACSceneInit() {
+    data::ACScene::done = false;
+    data::ACScene::frame_counter = 0;
+    data::ACScene::minute = 0;
+    data::ACScene::hour = 0;
+    data::ACScene::good = 0;
+    data::ACScene::ok = 0;
+    data::ACScene::bad = 0;
+    data::ACScene::background_id =
+        0;  // in the future this is perhaps a descriptive enum
+    data::ACScene::air = Vector2{125.f, 125.f};
+    data::ACScene::air_radius = 100.f;
+    data::ACScene::air_rotation_speed = 0.006f;
+    data::ACScene::apron_position = Vector2{570.f, 420.f};
+    data::ACScene::clock_position =
+        Vector2{GetScreenWidth() / 2.f, GetScreenHeight() / 8.f};
+    data::ACScene::schedule_area =
+        Rectangle{50.f, GetScreenHeight() / 8.f, GetScreenWidth() / 2.f,
+                  (GetScreenHeight() / 2.f) + 5.f};
+    data::ACScene::schedule_fontsize = 20;
+    data::ACScene::score_area = Rectangle{
+        (3 / 4.f) * GetScreenWidth(), GetScreenHeight() / 8.f, 150.f, 150.f};
+    data::ACScene::score_fontsize = 20;
 
     // initialize random stuff once
     std::random_device rd;
-    gen = mt19937{rd()};
-    flight_num_gen = uniform_int_distribution<int>{flight_number_range.first,
-                                                   flight_number_range.second};
-    arrival_time_minute_gen = uniform_int_distribution<int>{
-        arrival_time_minute_range.first, arrival_time_minute_range.second};
-    refuel_time_minute_gen = uniform_int_distribution<int>{
-        refuel_time_minute_range.first, refuel_time_minute_range.second};
-    apron_id_gen = uniform_int_distribution<int>{
+    data::ACScene::gen = mt19937{rd()};
+    data::ACScene::flight_num_gen = uniform_int_distribution<int>{
+        data::ACScene::flight_number_range.first,
+        data::ACScene::flight_number_range.second};
+    data::ACScene::arrival_time_minute_gen = uniform_int_distribution<int>{
+        data::ACScene::arrival_time_minute_range.first,
+        data::ACScene::arrival_time_minute_range.second};
+    data::ACScene::refuel_time_minute_gen = uniform_int_distribution<int>{
+        data::ACScene::refuel_time_minute_range.first,
+        data::ACScene::refuel_time_minute_range.second};
+    data::ACScene::apron_id_gen = uniform_int_distribution<int>{
         0,
-        apron_count -
+        data::ACScene::apron_count -
             1};  // aprons cannot be added during between init and unload calls
-    plane_texture_gen = uniform_int_distribution<int>{0, 11};
+    data::ACScene::plane_texture_gen = uniform_int_distribution<int>{0, 11};
 
     // generate flight schedule
-    generateFlightSetA();
+    feeder::generateFlightSetA();
     // buttons
-    buttons.clear();
-    buttons.push_back(Button{.id = 0,
-                             .region = Rectangle{600.f, 525.f, 148.f, 36.f},
-                             .name = "schedule button",
-                             .text = "Schedule",
-                             .fontsize = 30,
-                             .active = false});
+    data::ACScene::buttons.clear();
+    data::ACScene::buttons.push_back(
+        data::Button{.id = 0,
+                     .region = Rectangle{600.f, 525.f, 148.f, 36.f},
+                     .name = "schedule button",
+                     .text = "Schedule",
+                     .fontsize = 30,
+                     .active = false,
+                     .hovered = false});
 }
-void AirControllerScene::update() {
-    ++frame_counter;
-    updateTime();
-    updateFlights();
-    processUserInput();
+void api::ACSceneUpdate() {
+    ++data::ACScene::frame_counter;
+    feeder::updateTime();
+    feeder::updateFlights();
+    control::state::processUserInput();
 }
-void AirControllerScene::draw() {
-    drawLighting();
-    DrawTexture(background, 0, 0, Fade(WHITE, 0.9f));
-    drawGui();
-    drawSchedule();
-    drawPlanesInAir();
-    drawAprons();
-    drawTime();
-    drawFlightInfo();
-    DrawFPS(0, 0);
-    if (over) {
-        drawScore();
-    }
+void api::ACSceneDraw() {
+    /* DrawTexture(background, 0, 0, Fade(WHITE, 0.9f)); */
+    observer::drawBackground();
+    observer::drawButtons();
+    observer::drawFlights();
+    observer::drawAprons();
+    observer::drawClock();
+    observer::drawScore();
+    observer::drawSchedule();
 }
 void AirControllerScene::unload() {
     UnloadTexture(background);

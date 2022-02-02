@@ -40,6 +40,7 @@ using std::vector;
 // ...
 // hold up this is BEHAVIOR, not DATA it shouldn't be here at all
 // not in this capacity
+//
 // struct Scene {
 //     // void init();   -> moves to ?
 //     // void unload(); -> moves to ?
@@ -47,7 +48,14 @@ using std::vector;
 //     void draw();
 //     bool done();
 // };
+// ...
+// instead of using polymorphism for scene management use concepts thus freeing
+// the desing of the coupled nature of classes each scene will have it's own
+// data namespace instead of using a static class as a namespace
+// the init, update, draw, unload, done function bundle will exist in api.hpp
+// (other) in some capacity
 
+namespace data {
 // The first element of these structs is it's PRIMARY key
 // for struct FOO {int id}; if the element FOO_id appears as member of
 // another struct it is to be interpreted as a FOREIGN key
@@ -64,8 +72,10 @@ struct Flight {
     int arrival_time;    // time unit is frames
     int departure_time;  // time unit is frames
     int apron_id;        // correct apron for the plane to arrive
+    int sprite_id;
     PlaneStatus status;
     bool selected;
+    bool hovered;
 };
 struct Apron {
     // coloquially known as a "Gate"
@@ -81,58 +91,55 @@ struct Button {
     string text;  // text to write on button
     int fontsize;
     bool active;
+    bool hovered;
 };
 // scenes
-struct AirControllerScene : public Scene {
-    bool done_;
-    int frame_counter;
-    int MIN;            // frames per minute
-    int hour;           // game clock time
-    int minute;         // game clock time
-    int background_id;  // foreign key
-    Vector2 air;        // location for planes to hold in the air
-    float air_radius;
-    float air_rotation_speed;
-    Vector2 apron_position;
-    Vector2 schedule_position;
-    Vector2 clock_position;
-    Color highlight;
-    int apron_count;
-    pair<int, int> flight_number_range;
-    pair<int, int> arrival_time_minute_range;
-    pair<int, int> refuel_time_minute_range;
-    int good;  // flights that left on time and at the proper apron
-    int ok;    // flights that left on time OR from the proper apron
-    int bad;   // flights that were late AND from the wrong gate
-    list<Flight> flight_schedule;
-    optional<int> selected_flight;
-    optional<int> selected_apron;
-    mt19937 gen;
-    uniform_int_distribution<int> flight_num_gen;
-    uniform_int_distribution<int> arrival_time_minute_gen;
-    uniform_int_distribution<int> refuel_time_minute_gen;
-    uniform_int_distribution<int> apron_id_gen;
-    uniform_int_distribution<int> plane_texture_gen;
-    list<Button> buttons;
-
-    void init();
-    void update();
-    void draw();
-    void unload();
-    bool done();
-};
+namespace ACScene {
+bool done;
+int frame_counter;
+int MIN;            // frames per minute
+int hour;           // game clock time
+int minute;         // game clock time
+int background_id;  // foreign key
+Vector2 air;        // location for planes to hold in the air
+float air_radius;
+float air_rotation_speed;
+Vector2 apron_position;
+Vector2 clock_position;
+Rectangle schedule_area;
+Rectangle score_area;
+int score_fontsize;
+int schedule_fontsize;
+Color highlight;
+int apron_count;
+pair<int, int> flight_number_range;
+pair<int, int> arrival_time_minute_range;
+pair<int, int> refuel_time_minute_range;
+int good;  // flights that left on time and at the proper apron
+int ok;    // flights that left on time OR from the proper apron
+int bad;   // flights that were late AND from the wrong gate
+list<Flight> flight_schedule;
+optional<int> selected_flight;
+optional<int> selected_apron;
+mt19937 gen;
+uniform_int_distribution<int> flight_num_gen;
+uniform_int_distribution<int> arrival_time_minute_gen;
+uniform_int_distribution<int> refuel_time_minute_gen;
+uniform_int_distribution<int> apron_id_gen;
+uniform_int_distribution<int> plane_texture_gen;
+list<Button> buttons;
+}  // namespace ACScene
 // STATE
 // all static objects live here
 static array<Sprite, 11> plane_sprites;
 static array<Sprite, 10> digit_sprites;
+static array<Sprite, 1> apron_sprites;
+static array<Sprite, 1> flag_sprites;
 static array<Sprite, 1> background_sprites;
 static Sprite odot_sprite;
-static Sprite flag_sprite;
-static Sprite apron_sprite;
 static const int screen_width = 900;
 static const int screen_height = 675;
 static int fps = 60;
-static AirControllerScene air_controller_scene;
 
 // "tables" of relational data defined here
 static list<Flight> flights;  // set of flights the player must manage
@@ -150,4 +157,5 @@ static map<GameScene, GameScene> sceneGraph = {
 };
 // initialize the SceneManager
 static auto scene_manager = SceneManager<GameScene>(sceneGraph, true);
+}  // namespace data
 #endif
