@@ -10,6 +10,7 @@
 #include <numbers>
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "data.hpp"
 #include "raylib.h"
@@ -17,6 +18,7 @@
 using std::make_pair;
 using std::make_tuple;
 using std::tuple;
+using std::vector;
 namespace logic {
 
 // contraints

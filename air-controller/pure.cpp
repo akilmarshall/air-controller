@@ -69,14 +69,22 @@ vector<pair<int, Rectangle>> logic::derived::apronFlagPositions() {
         out.push_back(make_pair(id, area));
     }
 }
-int planeSpriteWidth() { return data::plane_sprites[0].texture.width; }
-int planeSpriteHeight() { return data::plane_sprites[0].texture.height; }
-int apronSpriteWidth() { return 32; }
-int apronSpriteHeight() { return 32; }
-int flagSpriteWidth() { return 16; }
-int flagSpriteHeight() { return 16; }
-float digitSpriteWidth() { return data::digit_sprites[0].texture.width; }
-float digitSpriteHeight() { return data::digit_sprites[0].texture.height; }
+int logic::pure::planeSpriteWidth() {
+    return data::plane_sprites[0].texture.width;
+}
+int logic::pure::planeSpriteHeight() {
+    return data::plane_sprites[0].texture.height;
+}
+int logic::pure::apronSpriteWidth() { return 32; }
+int logic::pure::apronSpriteHeight() { return 32; }
+int logic::pure::flagSpriteWidth() { return 16; }
+int logic::pure::flagSpriteHeight() { return 16; }
+float logic::pure::digitSpriteWidth() {
+    return data::digit_sprites[0].texture.width;
+}
+float logic::pure::digitSpriteHeight() {
+    return data::digit_sprites[0].texture.height;
+}
 
 data::Sprite logic::pure::backgroundSpriteACScene() {
     return data::background_sprites[data::ACScene::background_id];
@@ -103,17 +111,6 @@ optional<data::Apron> logic::pure::queryApronFlightId(int flight_id) {
             if (apron.flight_id == flight_id) {
                 return apron;
             }
-        }
-    }
-    return {};
-}
-optional<Texture2D> logic::pure::queryFlightTexture(int id) {
-    for (auto &flight : data::flights) {
-        if (flight.id == id) {
-            // feels weird to explicitly use [] here instead of an abstracted
-            // method call
-            auto id = flight.sprite_id;
-            return data::plane_sprites[id];
         }
     }
     return {};

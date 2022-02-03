@@ -13,47 +13,15 @@
 #include <utility>
 #include <vector>
 
-/* #include "api.hpp" */
 #include "raylib.h"
-#include "scene.hpp"
 
 using std::array;
 using std::list;
-using std::map;
 using std::mt19937;
 using std::optional;
 using std::pair;
 using std::string;
 using std::uniform_int_distribution;
-using std::unordered_set;
-using std::vector;
-
-// Scene information
-// I am going to stretch the metaphor but here we go,
-// This class represents an inteface to a table of polymorphic scene objects
-// that bear at least this common interface. I recognize that currently this
-// allows data hiding which is counter to the FRP design principle, further
-// analysis required to course correct.
-// ...
-// maybe its a table of objects with this exact interface but their data is
-// public in a table some where else?
-// ...
-// hold up this is BEHAVIOR, not DATA it shouldn't be here at all
-// not in this capacity
-//
-// struct Scene {
-//     // void init();   -> moves to ?
-//     // void unload(); -> moves to ?
-//     void update();
-//     void draw();
-//     bool done();
-// };
-// ...
-// instead of using polymorphism for scene management use concepts thus freeing
-// the desing of the coupled nature of classes each scene will have it's own
-// data namespace instead of using a static class as a namespace
-// the init, update, draw, unload, done function bundle will exist in api.hpp
-// (other) in some capacity
 
 namespace data {
 // The first element of these structs is it's PRIMARY key
@@ -95,39 +63,39 @@ struct Button {
 };
 // scenes
 namespace ACScene {
-bool done;
-int frame_counter;
-int MIN;            // frames per minute
-int hour;           // game clock time
-int minute;         // game clock time
-int background_id;  // foreign key
-Vector2 air;        // location for planes to hold in the air
-float air_radius;
-float air_rotation_speed;
-Vector2 apron_position;
-Vector2 clock_position;
-Rectangle schedule_area;
-Rectangle score_area;
-int score_fontsize;
-int schedule_fontsize;
-Color highlight;
-int apron_count;
-pair<int, int> flight_number_range;
-pair<int, int> arrival_time_minute_range;
-pair<int, int> refuel_time_minute_range;
-int good;  // flights that left on time and at the proper apron
-int ok;    // flights that left on time OR from the proper apron
-int bad;   // flights that were late AND from the wrong gate
-list<Flight> flight_schedule;
-optional<int> selected_flight;
-optional<int> selected_apron;
-mt19937 gen;
-uniform_int_distribution<int> flight_num_gen;
-uniform_int_distribution<int> arrival_time_minute_gen;
-uniform_int_distribution<int> refuel_time_minute_gen;
-uniform_int_distribution<int> apron_id_gen;
-uniform_int_distribution<int> plane_texture_gen;
-list<Button> buttons;
+static bool done;
+static int frame_counter;
+static int MIN;            // frames per minute
+static int hour;           // game clock time
+static int minute;         // game clock time
+static int background_id;  // foreign key
+static Vector2 air;        // location for planes to hold in the air
+static float air_radius;
+static float air_rotation_speed;
+static Vector2 apron_position;
+static Vector2 clock_position;
+static Rectangle schedule_area;
+static Rectangle score_area;
+static int score_fontsize;
+static int schedule_fontsize;
+static Color highlight;
+static int apron_count;
+static pair<int, int> flight_number_range;
+static pair<int, int> arrival_time_minute_range;
+static pair<int, int> refuel_time_minute_range;
+static int good;  // flights that left on time and at the proper apron
+static int ok;    // flights that left on time OR from the proper apron
+static int bad;   // flights that were late AND from the wrong gate
+static list<Flight> flight_schedule;
+static optional<int> selected_flight;
+static optional<int> selected_apron;
+static mt19937 gen;
+static uniform_int_distribution<int> flight_num_gen;
+static uniform_int_distribution<int> arrival_time_minute_gen;
+static uniform_int_distribution<int> refuel_time_minute_gen;
+static uniform_int_distribution<int> apron_id_gen;
+static uniform_int_distribution<int> plane_texture_gen;
+static list<Button> buttons;
 }  // namespace ACScene
 // STATE
 // all static objects live here
@@ -147,15 +115,14 @@ static list<Apron> aprons;
 
 // this section FRP to compile to WEB and desktop nicely
 // define an instance for each Scene object
+namespace scene {
 enum GameScene { RAYANIM, SPLASH, AIRCONTROLLER, CREDIT };
-// define the scene graph
-static map<GameScene, GameScene> sceneGraph = {
-    {RAYANIM, SPLASH},
-    {SPLASH, AIRCONTROLLER},
-    {AIRCONTROLLER, CREDIT},
-    {CREDIT, AIRCONTROLLER},
-};
-// initialize the SceneManager
-static auto scene_manager = SceneManager<GameScene>(sceneGraph, true);
+static GameScene current_scene;
+static float alpha;
+static bool transition_fade_out;
+static bool on_transition;
+static GameScene from_scene;
+static GameScene to_scene;
+}  // namespace scene
 }  // namespace data
 #endif

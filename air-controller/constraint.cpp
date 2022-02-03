@@ -1,6 +1,6 @@
 #include "logic.hpp"
 
-bool showFlight(data::Flight flight) {
+bool logic::constraint::showFlight(data::Flight flight) {
     switch (flight.status) {
         case data::PRE: {
             // flights are shown an hour before they arrive

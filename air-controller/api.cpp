@@ -1,7 +1,80 @@
 #include "api.hpp"
 
 // api
-void step() { data::scene_manager.Step(); }
+void api::scene::init(data::scene::GameScene scene) {
+    data::scene::current_scene = scene;
+    switch (data::scene::current_scene) {
+        case data::scene::RAYANIM: {
+        } break;
+        case data::scene::SPLASH: {
+        } break;
+        case data::scene::AIRCONTROLLER: {
+            api::scene::ACSceneInit();
+        } break;
+        case data::scene::CREDIT: {
+        } break;
+    }
+}
+void api::scene::transition(data::scene::GameScene scene) {
+    data::scene::on_transition = true;
+    data::scene::transition_fade_out = false;
+    data::scene::from_scene = data::scene::current_scene;
+    data::scene::to_scene = scene;
+    data::scene::alpha = 0.f;
+}
+void api::scene::updateTransition() {
+    if (data::scene::transition_fade_out) {
+        data::scene::alpha += 0.05;
+        if (data::scene::alpha > 1.01f) {
+            data::scene::alpha = 1.0f;
+            // unload used to be called here
+            // load next scene
+            switch (data::scene::to_scene) {
+                case data::scene::RAYANIM: {
+                } break;
+                case data::scene::SPLASH: {
+                } break;
+                case data::scene::AIRCONTROLLER: {
+                    api::scene::ACSceneInit();
+                } break;
+                case data::scene::CREDIT: {
+                } break;
+            }
+            data::scene::current_scene = data::scene::to_scene;
+            data::scene::transition_fade_out = true;
+        }
+    } else {
+        data::scene::alpha -= 0.02;
+        if (data::scene::alpha < -0.01f) {
+            data::scene::alpha = 0.f;
+            data::scene::transition_fade_out = false;
+            data::scene::on_transition = false;
+        }
+    }
+}
+void api::scene::drawTransition() {
+    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
+                  Fade(BLACK, data::scene::alpha));
+}
+
+void api::scene::step() {
+    switch (data::scene::current_scene) {
+        case data::scene::RAYANIM: {
+        } break;
+        case data::scene::SPLASH: {
+        } break;
+        case data::scene::AIRCONTROLLER: {
+            api::scene::ACSceneDraw();
+            api::scene::ACSceneUpdate();
+            if (api::scene::ACSceneDone()) {
+                // call transition to {next_scene}
+                api::scene::transition(data::scene::AIRCONTROLLER);
+            }
+        } break;
+        case data::scene::CREDIT: {
+        } break;
+    }
+}
 // feeders
 void api::feeder::generateFlightSetA() {
     auto flight = data::Flight{.id = 1,
@@ -46,6 +119,13 @@ void api::feeder::updateFlights() {
 void api::feeder::selectFlight(int id) {
     for (auto &flight : data::flights) {
         flight.selected = (flight.id == id);
+    }
+}
+void api::feeder::selectApron(int apron_id) {
+    for (auto &apron : data::aprons) {
+        if (apron_id == apron.id) {
+            apron.selected = true;
+        }
     }
 }
 // observers
@@ -146,7 +226,8 @@ void api::observer::drawAprons() {
             } else {
                 // draw default graphics
                 DrawRectangleLinesEx(pos, 2.f, RED);
-                DrawText(apron.active ? "on" : "off", pos.x, pos.y, 20, RED);
+                DrawText(apron.value().active ? "on" : "off", pos.x, pos.y, 20,
+                         RED);
             }
         }
     }
@@ -180,11 +261,7 @@ void api::observer::drawClock() {
     auto sprite_b = logic::pure::queryDigitSprite(b);
     auto sprite_c = logic::pure::queryDigitSprite(c);
     auto sprite_d = logic::pure::queryDigitSprite(d);
-    auto default_draw = [&](Rectangle d) {
-        DrawRectangleLines(d, data::ACScene::clock_position.y,
-                           logic::pure::digitSpriteWidth(),
-                           logic::pure::digitSpriteHeight(), RED);
-    };
+    auto default_draw = [&](Rectangle d) { DrawRectangleLinesEx(d, 2.f, RED); };
     if (sprite_a) {
         DrawTexturePro(sprite_a.value().texture, source, dest_a,
                        Vector2{logic::pure::digitSpriteWidth() / 2,
@@ -304,11 +381,13 @@ void api::observer::drawSchedule() {
                                 c = RED;
                             }
                         }
-                        DrawText(
-                            TextFormat(
-                                "G%i",
-                                logic::pure::queryApronFlightId(flight.id) + 1),
-                            col4, (y - 35) + i * 25, 20, c);
+                        DrawText(TextFormat(
+                                     "G%i",
+                                     logic::pure::queryApronFlightId(flight.id)
+                                             .value()
+                                             .id +
+                                         1),
+                                 col4, (y - 35) + i * 25, 20, c);
                     } else if (flight.status == data::AIR) {
                         auto sprite = logic::pure::queryFlightSprite(flight.id);
                         if (sprite) {

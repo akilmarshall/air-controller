@@ -375,10 +375,14 @@ endif
 #------------------------------------------------------------------------------------------------
 PROJECT_SOURCE_FILES ?= \
     main.cpp \
-	splash.cpp \
-	ray_animation.cpp \
-	credit.cpp \
-	aircontroller.cpp
+	acscene.cpp \
+	api.cpp \
+	constraint.cpp \
+	control.cpp \
+	load_texture.cpp \
+	pure.cpp \
+
+	
 
 # Define all object files from source files
 OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
