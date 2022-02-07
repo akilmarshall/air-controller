@@ -4,36 +4,33 @@
  * - derived relational variables (required composite tables, etc)
  * - pure functions
  */
-#ifndef LOGIC_HPP
-#define LOGIC_HPP
+#ifndef LOGIC_HXX
+#define LOGIC_HXX
 #include <cmath>
 #include <numbers>
 #include <optional>
 #include <utility>
 #include <vector>
 
-#include "data.hpp"
+#include "data.hxx"
 #include "raylib.h"
 
 using std::make_pair;
 using std::make_tuple;
+using std::optional;
 using std::tuple;
 using std::vector;
-namespace logic {
 
-// contraints
+namespace logic {
 namespace constraint {
 bool showFlight(data::Flight flight);  // should a flight be shown?
 }
-// derived relational data
 namespace derived {
-/* vector<pair<data::Flight, Rectangle>> arielFlightsWithPosition(); */
 vector<int> arielFlights();
 vector<pair<int, Rectangle>> arielPositions();
 vector<pair<int, Rectangle>> apronPositions();
 vector<pair<int, Rectangle>> apronFlagPositions();
 }  // namespace derived
-// pure functions
 namespace pure {
 bool isHover(Rectangle region);
 bool isClicked(Rectangle region, int b);
@@ -49,15 +46,15 @@ int flagSpriteHeight();
 float digitSpriteWidth();
 float digitSpriteHeight();
 
-data::Sprite backgroundSpriteACScene();  // get the current background texture
+Texture2D backgroundTextureACScene();  // get the current background texture
 // for the AC Scene
 optional<data::Flight> queryFlight(
     int id);  // attempt to get the data for a flight with id
 optional<data::Apron> queryApron(int id);
-optional<data::Sprite> queryFlightSprite(int id);
-optional<data::Sprite> queryApronSprite(int id);
-optional<data::Sprite> queryFlagSprite(int id);
-optional<data::Sprite> queryDigitSprite(int i);
+optional<Texture2D> queryFlightTexture(int id);
+optional<Texture2D> queryApronTexture(int id);
+optional<Texture2D> queryFlagTexture(int id);
+optional<Texture2D> queryDigitTexture(int i);
 inline tuple<int, int, int, int> minuteToDigits(int minute) {
     auto h = (int)minute / 60;
     auto m = minute - 60 * h;

@@ -1,10 +1,12 @@
-#include "api.hpp"
-#include "control.hpp"
-#include "data.hpp"
+#include "api.hxx"
+#include "control.hxx"
+#include "data.hxx"
 
 void api::scene::ACSceneInit() {
     data::ACScene::done = false;
     data::ACScene::frame_counter = 0;
+    data::ACScene::MIN = 25;
+
     data::ACScene::minute = 0;
     data::ACScene::hour = 0;
     data::ACScene::good = 0;
@@ -25,8 +27,13 @@ void api::scene::ACSceneInit() {
     data::ACScene::score_area = Rectangle{
         (3 / 4.f) * GetScreenWidth(), GetScreenHeight() / 8.f, 150.f, 150.f};
     data::ACScene::score_fontsize = 20;
+    data::ACScene::highlight = GOLD;
+    data::ACScene::apron_count = 3;
 
     // initialize random stuff once
+    data::ACScene::flight_number_range = make_pair(100, 999);
+    data::ACScene::arrival_time_minute_range = make_pair(0, 59);
+    data::ACScene::refuel_time_minute_range = make_pair(15, 60);
     std::random_device rd;
     data::ACScene::gen = mt19937{rd()};
     data::ACScene::flight_num_gen = uniform_int_distribution<int>{
@@ -64,7 +71,6 @@ void api::scene::ACSceneUpdate() {
     control::state::processUserInput();
 }
 void api::scene::ACSceneDraw() {
-    /* DrawTexture(background, 0, 0, Fade(WHITE, 0.9f)); */
     observer::drawBackground();
     observer::drawButtons();
     observer::drawFlights();

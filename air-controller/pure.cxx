@@ -1,4 +1,4 @@
-#include "logic.hpp"
+#include "logic.hxx"
 
 bool logic::pure::isHover(Rectangle region) {
     auto pos = GetMousePosition();
@@ -68,26 +68,19 @@ vector<pair<int, Rectangle>> logic::derived::apronFlagPositions() {
         area.height = logic::pure::flagSpriteHeight();
         out.push_back(make_pair(id, area));
     }
+    return out;
 }
-int logic::pure::planeSpriteWidth() {
-    return data::plane_sprites[0].texture.width;
-}
-int logic::pure::planeSpriteHeight() {
-    return data::plane_sprites[0].texture.height;
-}
+int logic::pure::planeSpriteWidth() { return 32; }
+int logic::pure::planeSpriteHeight() { return 32; }
 int logic::pure::apronSpriteWidth() { return 32; }
 int logic::pure::apronSpriteHeight() { return 32; }
 int logic::pure::flagSpriteWidth() { return 16; }
 int logic::pure::flagSpriteHeight() { return 16; }
-float logic::pure::digitSpriteWidth() {
-    return data::digit_sprites[0].texture.width;
-}
-float logic::pure::digitSpriteHeight() {
-    return data::digit_sprites[0].texture.height;
-}
+float logic::pure::digitSpriteWidth() { return 16; }
+float logic::pure::digitSpriteHeight() { return 16; }
 
-data::Sprite logic::pure::backgroundSpriteACScene() {
-    return data::background_sprites[data::ACScene::background_id];
+Texture2D logic::pure::backgroundTextureACScene() {
+    return data::textures["ito"];
 }
 optional<data::Flight> logic::pure::queryFlight(int id) {
     for (auto &flight : data::flights) {
@@ -115,36 +108,28 @@ optional<data::Apron> logic::pure::queryApronFlightId(int flight_id) {
     }
     return {};
 }
-optional<data::Sprite> logic::pure::queryFlightSprite(int id) {
-    for (auto &plane_sprite : data::plane_sprites) {
-        if (plane_sprite.id == id) {
-            return plane_sprite;
-        }
+optional<Texture2D> logic::pure::queryFlightTexture(int id) {
+    return {};
+    if (data::textures.contains(TextFormat("plane%i", id))) {
+        return data::textures[TextFormat("plane%i", id)];
     }
     return {};
 }
-optional<data::Sprite> logic::pure::queryApronSprite(int id) {
-    for (auto &apron_sprite : data::apron_sprites) {
-        if (apron_sprite.id == id) {
-            return apron_sprite;
-        }
+optional<Texture2D> logic::pure::queryApronTexture(int id) {
+    if (data::textures.contains(TextFormat("apron%i", id))) {
+        return data::textures[TextFormat("apron%i", id)];
     }
     return {};
 }
-optional<data::Sprite> logic::pure::queryFlagSprite(int id) {
-    return data::flag_sprites[0];  // "hack" this method is overbuilt, there is
-                                   // only 1 texture, in the future no more of
-                                   // this
-    for (auto &flag_sprite : data::flag_sprites) {
-        if (flag_sprite.id == id) {
-            return flag_sprite;
-        }
+optional<Texture2D> logic::pure::queryFlagTexture(int id) {
+    if (data::textures.contains("flag")) {
+        return data::textures["flag"];
     }
     return {};
 }
-optional<data::Sprite> logic::pure::queryDigitSprite(int i) {
-    if (0 <= i && i <= 9) {
-        return data::digit_sprites[i];
+optional<Texture2D> logic::pure::queryDigitTexture(int i) {
+    if (data::textures.contains(TextFormat("digit%i", i))) {
+        return data::textures[TextFormat("digit%i", i)];
     }
     return {};
 }

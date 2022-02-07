@@ -1,9 +1,10 @@
-#include "api.hpp"
+#include "api.hxx"
 
-// api
-void api::scene::init(data::scene::GameScene scene) {
-    data::scene::current_scene = scene;
-    switch (data::scene::current_scene) {
+void api::scene::init(data::scene::Scene next) {
+    data::scene::alpha = 0.f;
+    data::scene::transition_fade_out = true;
+    data::scene::current = next;
+    switch (data::scene::current) {
         case data::scene::RAYANIM: {
         } break;
         case data::scene::SPLASH: {
@@ -15,10 +16,10 @@ void api::scene::init(data::scene::GameScene scene) {
         } break;
     }
 }
-void api::scene::transition(data::scene::GameScene scene) {
+void api::scene::transition(data::scene::Scene scene) {
     data::scene::on_transition = true;
     data::scene::transition_fade_out = false;
-    data::scene::from_scene = data::scene::current_scene;
+    data::scene::from_scene = data::scene::current;
     data::scene::to_scene = scene;
     data::scene::alpha = 0.f;
 }
@@ -40,7 +41,7 @@ void api::scene::updateTransition() {
                 case data::scene::CREDIT: {
                 } break;
             }
-            data::scene::current_scene = data::scene::to_scene;
+            data::scene::current = data::scene::to_scene;
             data::scene::transition_fade_out = true;
         }
     } else {
@@ -58,22 +59,40 @@ void api::scene::drawTransition() {
 }
 
 void api::scene::step() {
-    switch (data::scene::current_scene) {
+    if (!data::scene::on_transition) {
+        switch (data::scene::current) {
+            case data::scene::RAYANIM: {
+            } break;
+            case data::scene::SPLASH: {
+            } break;
+            case data::scene::AIRCONTROLLER: {
+                api::scene::ACSceneUpdate();
+                if (api::scene::ACSceneDone()) {
+                    api::scene::transition(data::scene::AIRCONTROLLER);
+                }
+            } break;
+            case data::scene::CREDIT: {
+            } break;
+        }
+    } else {
+        api::scene::updateTransition();
+    }
+    BeginDrawing();
+    switch (data::scene::current) {
         case data::scene::RAYANIM: {
         } break;
         case data::scene::SPLASH: {
         } break;
         case data::scene::AIRCONTROLLER: {
             api::scene::ACSceneDraw();
-            api::scene::ACSceneUpdate();
-            if (api::scene::ACSceneDone()) {
-                // call transition to {next_scene}
-                api::scene::transition(data::scene::AIRCONTROLLER);
-            }
         } break;
         case data::scene::CREDIT: {
         } break;
     }
+    if (data::scene::on_transition) {
+        api::scene::drawTransition();
+    }
+    EndDrawing();
 }
 // feeders
 void api::feeder::generateFlightSetA() {
@@ -130,8 +149,7 @@ void api::feeder::selectApron(int apron_id) {
 }
 // observers
 void api::observer::drawBackground() {
-    auto sprite = logic::pure::backgroundSpriteACScene();
-    DrawTexture(sprite.texture, 0.f, 0.f, WHITE);
+    DrawTexture(logic::pure::backgroundTextureACScene(), 0, 0, WHITE);
 }
 void api::observer::drawButtons() {
     for (auto &button : data::ACScene::buttons) {
@@ -160,6 +178,7 @@ void api::observer::drawButtons() {
                  button.region.y + dy, button.fontsize, GOLD);
     }
 }
+#include <iostream>
 void api::observer::drawFlights() {
     for (auto &[flight_id, pos] : logic::derived::arielPositions()) {
         auto source =
@@ -169,8 +188,8 @@ void api::observer::drawFlights() {
             Rectangle{pos.x, pos.y, (float)logic::pure::planeSpriteWidth(),
                       (float)logic::pure::planeSpriteHeight()};
         auto flight = logic::pure::queryFlight(flight_id);
-        auto flight_sprite = logic::pure::queryFlightSprite(flight_id);
-        if (flight_sprite) {
+        auto flight_texture = logic::pure::queryFlightTexture(flight_id);
+        if (flight_texture) {
             if (flight) {
                 if (flight.value().selected || flight.value().hovered) {
                     auto s = 2;
@@ -179,14 +198,15 @@ void api::observer::drawFlights() {
                     dest_scaled.y -= (s * dest.height) / 2;
                     dest_scaled.height *= 2;
                     dest_scaled.width *= 2;
+                    std::cout << dest_scaled.x << " " << dest_scaled.y << "\n";
                     DrawTexturePro(
-                        flight_sprite.value().texture, source, dest_scaled,
+                        flight_texture.value(), source, dest_scaled,
                         Vector2{logic::pure::planeSpriteWidth() / 2.f,
                                 logic::pure::planeSpriteHeight() / 2.f},
                         0.f, WHITE);
                 } else {
                     DrawTexturePro(
-                        flight_sprite.value().texture, source, dest,
+                        flight_texture.value(), source, dest,
                         Vector2{logic::pure::planeSpriteWidth() / 2.f,
                                 logic::pure::planeSpriteHeight() / 2.f},
                         0.f, WHITE);
@@ -202,9 +222,9 @@ void api::observer::drawFlights() {
 }
 void api::observer::drawAprons() {
     for (auto &[apron_id, pos] : logic::derived::apronPositions()) {
-        auto sprite = logic::pure::queryApronSprite(apron_id);
-        if (sprite) {
-            DrawTexture(sprite.value().texture, pos.x, pos.y, WHITE);
+        auto texture = logic::pure::queryApronTexture(apron_id);
+        if (texture) {
+            DrawTexture(texture.value(), pos.x, pos.y, WHITE);
         } else {
             // draw default graphics
             DrawRectangleLinesEx(pos, 2.0f, RED);
@@ -214,15 +234,15 @@ void api::observer::drawAprons() {
     for (auto &[apron_id, pos] : logic::derived::apronFlagPositions()) {
         auto apron = logic::pure::queryApron(apron_id);
         if (apron) {
-            auto sprite = logic::pure::queryFlagSprite(apron_id);
-            if (sprite) {
+            auto texture = logic::pure::queryFlagTexture(apron_id);
+            if (texture) {
                 Color c;
                 if (apron.value().active) {
                     c = WHITE;
                 } else {
                     c = DARKPURPLE;
                 }
-                DrawTexture(sprite.value().texture, pos.x, pos.y, c);
+                DrawTexture(texture.value(), pos.x, pos.y, c);
             } else {
                 // draw default graphics
                 DrawRectangleLinesEx(pos, 2.f, RED);
@@ -257,13 +277,13 @@ void api::observer::drawClock() {
         data::ACScene::clock_position.x + (2 * logic::pure::digitSpriteWidth()),
         data::ACScene::clock_position.y, s * logic::pure::digitSpriteWidth(),
         s * logic::pure::digitSpriteHeight()};
-    auto sprite_a = logic::pure::queryDigitSprite(a);
-    auto sprite_b = logic::pure::queryDigitSprite(b);
-    auto sprite_c = logic::pure::queryDigitSprite(c);
-    auto sprite_d = logic::pure::queryDigitSprite(d);
+    auto texture_a = logic::pure::queryDigitTexture(a);
+    auto texture_b = logic::pure::queryDigitTexture(b);
+    auto texture_c = logic::pure::queryDigitTexture(c);
+    auto texture_d = logic::pure::queryDigitTexture(d);
     auto default_draw = [&](Rectangle d) { DrawRectangleLinesEx(d, 2.f, RED); };
-    if (sprite_a) {
-        DrawTexturePro(sprite_a.value().texture, source, dest_a,
+    if (texture_a) {
+        DrawTexturePro(texture_a.value(), source, dest_a,
                        Vector2{logic::pure::digitSpriteWidth() / 2,
                                logic::pure::digitSpriteHeight() / 2},
                        0.f, WHITE);
@@ -273,8 +293,8 @@ void api::observer::drawClock() {
         DrawText(std::to_string(a).c_str(), dest_a.x,
                  data::ACScene::clock_position.y, 20, RED);
     }
-    if (sprite_b) {
-        DrawTexturePro(sprite_b.value().texture, source, dest_b,
+    if (texture_b) {
+        DrawTexturePro(texture_b.value(), source, dest_b,
                        Vector2{logic::pure::digitSpriteWidth() / 2,
                                logic::pure::digitSpriteHeight() / 2},
                        0.f, WHITE);
@@ -284,8 +304,8 @@ void api::observer::drawClock() {
         DrawText(std::to_string(b).c_str(), dest_b.x,
                  data::ACScene::clock_position.y, 20, RED);
     }
-    if (sprite_c) {
-        DrawTexturePro(sprite_c.value().texture, source, dest_c,
+    if (texture_c) {
+        DrawTexturePro(texture_c.value(), source, dest_c,
                        Vector2{logic::pure::digitSpriteWidth() / 2,
                                logic::pure::digitSpriteHeight() / 2},
                        0.f, WHITE);
@@ -295,8 +315,8 @@ void api::observer::drawClock() {
         DrawText(std::to_string(c).c_str(), dest_c.x,
                  data::ACScene::clock_position.y, 20, RED);
     }
-    if (sprite_d) {
-        DrawTexturePro(sprite_d.value().texture, source, dest_d,
+    if (texture_d) {
+        DrawTexturePro(texture_d.value(), source, dest_d,
                        Vector2{logic::pure::digitSpriteWidth() / 2,
                                logic::pure::digitSpriteHeight() / 2},
                        0.f, WHITE);
@@ -306,7 +326,7 @@ void api::observer::drawClock() {
         DrawText(std::to_string(d).c_str(), dest_d.x,
                  data::ACScene::clock_position.y, 20, RED);
     }
-    DrawTexturePro(data::odot_sprite.texture, source,
+    DrawTexturePro(data::textures["odot"], source,
                    Rectangle{data::ACScene::clock_position.x,
                              data::ACScene::clock_position.y,
                              logic::pure::digitSpriteWidth(),
@@ -314,7 +334,7 @@ void api::observer::drawClock() {
                    Vector2{logic::pure::digitSpriteWidth() / 2,
                            logic::pure::digitSpriteHeight() / 2},
                    0.f, WHITE);
-    DrawTexturePro(data::odot_sprite.texture, source,
+    DrawTexturePro(data::textures["odot"], source,
                    Rectangle{data::ACScene::clock_position.x,
                              data::ACScene::clock_position.y - 12,
                              logic::pure::digitSpriteWidth(),
@@ -356,7 +376,8 @@ void api::observer::drawSchedule() {
                       GOLD);
         for (int i = 0; auto &flight : data::ACScene::flight_schedule) {
             switch (flight.status) {
-                case data::AIR || data::APRON: {
+                case data::AIR:
+                case data::APRON: {
                     DrawText(std::to_string(flight.id).c_str(), col1,
                              (y - 30) + i * 25,
                              data::ACScene::schedule_fontsize, GOLD);
@@ -389,10 +410,11 @@ void api::observer::drawSchedule() {
                                          1),
                                  col4, (y - 35) + i * 25, 20, c);
                     } else if (flight.status == data::AIR) {
-                        auto sprite = logic::pure::queryFlightSprite(flight.id);
-                        if (sprite) {
+                        auto texture =
+                            logic::pure::queryFlightTexture(flight.id);
+                        if (texture) {
                             /* Draw */
-                            DrawTexture(sprite.value().texture, col4,
+                            DrawTexture(texture.value(), col4,
                                         (y - 35) + i * 25, WHITE);
                         } else {
                             // draw default graphics

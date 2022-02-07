@@ -1,5 +1,24 @@
-#include "control.hpp"
+#include "control.hxx"
 
+#include "api.hxx"
+
+void control::state::loadTextures() {
+    // background textures
+    data::textures["ito"] = LoadTexture("resources/ito.png");
+    // plane textures
+    for (int i = 0; i < 12; ++i) {
+        data::textures[TextFormat("plane%i", i)] =
+            LoadTexture(TextFormat("resources/ship_%i.png", i));
+    }
+    // digit textures
+    for (int i = 0; i < 10; ++i) {
+        data::textures[TextFormat("digit%i", i)] =
+            LoadTexture(TextFormat("resources/digit_%i.png", i));
+    }
+    data::textures["odot"] = LoadTexture("resources/odot.png");
+    // flag texture
+    data::textures["flag"] = LoadTexture("resources/flag.png");
+}
 void control::state::processUserInput() {
     for (auto &b : data::ACScene::buttons) {
         if (logic::pure::isClicked(b.region, 0)) {

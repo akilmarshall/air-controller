@@ -1,4 +1,4 @@
-#include "logic.hpp"
+#include "logic.hxx"
 
 bool logic::constraint::showFlight(data::Flight flight) {
     switch (flight.status) {
@@ -17,4 +17,5 @@ bool logic::constraint::showFlight(data::Flight flight) {
             return false;
         } break;
     }
+    return false;
 }

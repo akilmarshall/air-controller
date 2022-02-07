@@ -190,7 +190,7 @@ endif
 #  -Wno-missing-braces  ignore invalid warning (GCC bug 53119)
 #  -Wno-unused-value    ignore unused return values of some functions (i.e. fread())
 #  -D_DEFAULT_SOURCE    use with -std=c99 on Linux and PLATFORM_WEB, required for timespec
-CFLAGS = -std=c++20 -Wall -Wno-missing-braces -Wunused-result -D_DEFAULT_SOURCE
+CFLAGS = -std=c++20 -Wno-missing-braces -Wunused-result -D_DEFAULT_SOURCE
 
 ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -D_DEBUG
@@ -374,13 +374,12 @@ endif
 # Define source code object files required
 #------------------------------------------------------------------------------------------------
 PROJECT_SOURCE_FILES ?= \
-    main.cpp \
-	acscene.cpp \
-	api.cpp \
-	constraint.cpp \
-	control.cpp \
-	load_texture.cpp \
-	pure.cpp \
+						acscene.cxx \
+						api.cxx \
+						constraint.cxx \
+						control.cxx \
+						main.cxx \
+						pure.cxx \
 
 	
 
