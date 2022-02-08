@@ -100,7 +100,7 @@ void api::feeder::generateFlightSetA() {
         data::Flight{.id = 1,
                      .arrival_time = 75 * data::ACScene::MIN,
                      .departure_time = 175 * data::ACScene::MIN,
-                     .apron_id = 1,
+                     .apron_id = 0,
                      .status = data::PRE,
                      .selected = false,
                      .hovered = false});
@@ -108,7 +108,7 @@ void api::feeder::generateFlightSetA() {
         data::Flight{.id = 2,
                      .arrival_time = 105 * data::ACScene::MIN,
                      .departure_time = 205 * data::ACScene::MIN,
-                     .apron_id = 2,
+                     .apron_id = 1,
                      .status = data::PRE,
                      .selected = false,
                      .hovered = false});
@@ -116,7 +116,7 @@ void api::feeder::generateFlightSetA() {
         data::Flight{.id = 3,
                      .arrival_time = 130 * data::ACScene::MIN,
                      .departure_time = 230 * data::ACScene::MIN,
-                     .apron_id = 3,
+                     .apron_id = 2,
                      .status = data::PRE,
                      .selected = false,
                      .hovered = false});
@@ -301,7 +301,7 @@ void api::observer::drawSelectFlightInfo() {
                      fontsize, GOLD);
             DrawText(TextFormat("%i%i:%i%i", l, m, n, o), col + 10, row3,
                      fontsize, GOLD);
-            DrawText(TextFormat("%i", flight.apron_id), col + 10, row4,
+            DrawText(TextFormat("%i", flight.apron_id + 1), col + 10, row4,
                      fontsize, GOLD);
         }
     }
@@ -437,21 +437,25 @@ void api::observer::drawClock() {
                    0.f, WHITE);
 }
 void api::observer::drawScore() {
-    auto delta_y = data::ACScene::score_area.height / 3.f;
-    DrawRectanglePro(data::ACScene::score_area, Vector2{}, 0.f,
-                     Fade(DARKGRAY, 0.8f));
-    DrawText(TextFormat("Good: %i", data::ACScene::good),
-             data::ACScene::score_area.x,
-             data::ACScene::score_area.y + (0 * delta_y),
-             data::ACScene::score_fontsize, GOLD);
-    DrawText(TextFormat("OK: %i", data::ACScene::ok),
-             data::ACScene::score_area.x,
-             data::ACScene::score_area.y + (1 * delta_y),
-             data::ACScene::score_fontsize, GOLD);
-    DrawText(TextFormat("Bad: %i", data::ACScene::bad),
-             data::ACScene::score_area.x,
-             data::ACScene::score_area.y + (2 * delta_y),
-             data::ACScene::score_fontsize, GOLD);
+    auto good = "Good";
+    auto ok = "OK";
+    auto bad = "Bad";
+    auto widths = array<int, 3>{MeasureText(good, 20), MeasureText(ok, 20),
+                                MeasureText(bad, 20)};
+    auto max_width = max(widths[0], max(widths[1], widths[2]));
+    auto x = data::ACScene::score_area.x;
+    auto y = data::ACScene::score_area.y;
+    auto shadow = Rectangle{x - 10, y - 10, 2.4f * max_width, 100.f};
+    DrawRectangleRounded(shadow, 0.4f, 100, Fade(DARKGRAY, 0.8f));
+    DrawText(good, max_width + x - widths[0], y, 20, GOLD);
+    DrawText(to_string(data::ACScene::good).c_str(), x + max_width + 10, y, 20,
+             GREEN);
+    DrawText(ok, max_width + x - widths[1], y + 30, 20, GOLD);
+    DrawText(to_string(data::ACScene::ok).c_str(), x + max_width + 10, y + 30,
+             20, GOLD);
+    DrawText(bad, max_width + x - widths[2], y + 60, 20, GOLD);
+    DrawText(to_string(data::ACScene::bad).c_str(), x + max_width + 10, y + 60,
+             20, RED);
 }
 void api::observer::drawSchedule() {
     if (logic::pure::scheduleActive()) {

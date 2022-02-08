@@ -7,12 +7,14 @@
 #define API_HXX
 
 #include <array>
+#include <string>
 
 #include "control.hxx"
 #include "data.hxx"
 #include "logic.hxx"
 #include "raylib.h"
 using std::array;
+using std::to_string;
 
 namespace api {
 inline void drawBackground() {

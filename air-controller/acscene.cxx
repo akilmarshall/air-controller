@@ -73,9 +73,9 @@ void api::scene::ACSceneUpdate() {
 void api::scene::ACSceneDraw() {
     observer::drawBackground();
     observer::drawButtons();
+    observer::drawSelectFlightInfo();
     observer::drawFlights();
     observer::drawAprons();
-    observer::drawSelectFlightInfo();
     observer::drawClock();
     observer::drawScore();
     observer::drawSchedule();
