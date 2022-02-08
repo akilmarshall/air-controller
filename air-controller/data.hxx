@@ -1,5 +1,6 @@
 #ifndef DATA_HXX
 #define DATA_HXX
+#include <algorithm>
 #include <array>
 #include <list>
 #include <map>
@@ -14,6 +15,7 @@
 
 using std::list;
 using std::map;
+using std::max;
 using std::mt19937;
 using std::optional;
 using std::pair;
@@ -71,7 +73,7 @@ inline Scene to_scene;
 namespace ACScene {
 inline bool done;
 inline int frame_counter;
-inline int MIN{25};        // frames per minute
+inline int MIN;            // frames per minute
 inline int hour;           // game clock time
 inline int minute;         // game clock time
 inline int background_id;  // foreign key
@@ -92,7 +94,6 @@ inline pair<int, int> refuel_time_minute_range;
 inline int good;  // flights that left on time and at the proper apron
 inline int ok;    // flights that left on time OR from the proper apron
 inline int bad;   // flights that were late AND from the wrong gate
-inline list<Flight> flight_schedule;
 inline optional<int> selected_flight;
 inline optional<int> selected_apron;
 inline mt19937 gen;

@@ -21,7 +21,7 @@ void api::scene::ACSceneInit() {
     data::ACScene::clock_position =
         Vector2{GetScreenWidth() / 2.f, GetScreenHeight() / 8.f};
     data::ACScene::schedule_area =
-        Rectangle{50.f, GetScreenHeight() / 8.f, GetScreenWidth() / 2.f,
+        Rectangle{50.f, (GetScreenHeight() / 2.f) - 45, GetScreenWidth() / 2.f,
                   (GetScreenHeight() / 2.f) + 5.f};
     data::ACScene::schedule_fontsize = 20;
     data::ACScene::score_area = Rectangle{
@@ -75,6 +75,7 @@ void api::scene::ACSceneDraw() {
     observer::drawButtons();
     observer::drawFlights();
     observer::drawAprons();
+    observer::drawSelectFlightInfo();
     observer::drawClock();
     observer::drawScore();
     observer::drawSchedule();

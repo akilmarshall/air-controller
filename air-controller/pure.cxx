@@ -2,8 +2,8 @@
 
 bool logic::pure::isHover(Rectangle region) {
     auto pos = GetMousePosition();
-    auto X = region.x <= pos.x <= region.x + region.width;
-    auto Y = region.y <= pos.y <= region.y + region.height;
+    auto X = region.x <= pos.x && pos.x <= region.x + region.width;
+    auto Y = region.y <= pos.y && pos.y <= region.y + region.height;
     return X && Y;
 }
 bool logic::pure::isClicked(Rectangle region, int b) {
@@ -12,7 +12,7 @@ bool logic::pure::isClicked(Rectangle region, int b) {
 bool logic::pure::complete() {
     // check if the player has completed the flight schedule
     return data::ACScene::good + data::ACScene::ok + data::ACScene::bad ==
-           (int)data::ACScene::flight_schedule.size();
+           (int)data::flights.size();
 }
 bool logic::pure::scheduleActive() {
     for (auto &b : data::ACScene::buttons) {
@@ -42,9 +42,9 @@ vector<pair<int, Rectangle>> logic::derived::arielPositions() {
             data::ACScene::air.x + (data::ACScene::air_radius * cosf(theta));
         auto y =
             data::ACScene::air.y + (data::ACScene::air_radius * sinf(theta));
-        out.push_back(
-            make_pair(i, Rectangle{x, y, (float)logic::pure::planeSpriteWidth(),
-                                   (float)logic::pure::planeSpriteHeight()}));
+        out.push_back(make_pair(
+            id, Rectangle{x, y, (float)logic::pure::planeSpriteWidth(),
+                          (float)logic::pure::planeSpriteHeight()}));
         ++i;
     }
     return out;
@@ -109,7 +109,6 @@ optional<data::Apron> logic::pure::queryApronFlightId(int flight_id) {
     return {};
 }
 optional<Texture2D> logic::pure::queryFlightTexture(int id) {
-    return {};
     if (data::textures.contains(TextFormat("plane%i", id))) {
         return data::textures[TextFormat("plane%i", id)];
     }

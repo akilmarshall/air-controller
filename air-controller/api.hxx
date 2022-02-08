@@ -6,10 +6,13 @@
 #ifndef API_HXX
 #define API_HXX
 
+#include <array>
+
 #include "control.hxx"
 #include "data.hxx"
 #include "logic.hxx"
 #include "raylib.h"
+using std::array;
 
 namespace api {
 inline void drawBackground() {
@@ -33,14 +36,17 @@ bool ACSceneDone();
 namespace feeder {
 void generateFlightSetA();
 void updateTime();
-void updateFlights();  // flight data is updated here
-void selectFlight(int id);
-void selectApron(int apron_id);
+void updateFlights();          // flight data is updated here
+void setFlightSelect(int id);  // flip the slight select state
+void setFlightSelect(int id, bool state);
+void setFlightHover(int id, bool state);
+void selectApron(int id);
 }  // namespace feeder
 namespace observer {
 void drawBackground();
 void drawButtons();
 void drawFlights();
+void drawSelectFlightInfo();
 void drawAprons();
 void drawClock();
 void drawScore();

@@ -19,6 +19,10 @@ int main() {
 #else
     SetTargetFPS(data::fps);
     while (!WindowShouldClose()) {
+        if (data::flights.size() > 0) {
+            for (auto &flight : data::flights) {
+            }
+        }
         api::scene::step();
     }
 #endif

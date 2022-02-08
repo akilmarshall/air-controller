@@ -30,9 +30,19 @@ void control::state::processUserInput() {
         }
     }
     for (auto &[id, pos] : logic::derived::arielPositions()) {
-        if (logic::pure::isClicked(pos, 0)) {
-            api::feeder::selectFlight(id);
-        } else if (logic::pure::isHover(pos)) {
+        pos.x -= logic::pure::planeSpriteWidth() / 2.f;
+        pos.y -= logic::pure::planeSpriteHeight() / 2.f;
+        if (IsMouseButtonPressed(0)) {
+            if (logic::pure::isClicked(pos, 0)) {
+                api::feeder::setFlightSelect(id);
+            } else {
+                api::feeder::setFlightSelect(id, false);
+            }
+        }
+        if (logic::pure::isHover(pos)) {
+            api::feeder::setFlightHover(id, true);
+        } else {
+            api::feeder::setFlightHover(id, false);
         }
     }
     for (auto &[id, pos] : logic::derived::apronPositions()) {
