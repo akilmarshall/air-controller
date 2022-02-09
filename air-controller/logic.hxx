@@ -37,14 +37,14 @@ bool isClicked(Rectangle region, int b);
 bool complete();  // return true when the player completes the flight schedule
                   // (flights)
 bool scheduleActive();
-int planeSpriteWidth();
-int planeSpriteHeight();
-int apronSpriteWidth();
-int apronSpriteHeight();
-int flagSpriteWidth();
-int flagSpriteHeight();
-float digitSpriteWidth();
-float digitSpriteHeight();
+int planeTextureWidth();
+int planeTextureHeight();
+int apronTextureWidth();
+int apronTextureHeight();
+int flagTextureWidth();
+int flagTextureHeight();
+float digitTextureWidth();
+float digitTextureHeight();
 
 Texture2D backgroundTextureACScene();  // get the current background texture
 // for the AC Scene

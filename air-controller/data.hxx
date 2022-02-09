@@ -32,15 +32,12 @@ struct Flight {
     int apron_id;        // correct apron for the plane to arrive
     int sprite_id;
     PlaneStatus status;
-    bool selected;
-    bool hovered;
 };
 struct Apron {
     // coloquially known as a "Gate"
     int id;                   // coloquially known as the gate "number"
     bool active;              // activated for take off
     optional<int> flight_id;  // optional foreign key
-    bool selected;
 };
 struct Button {
     int id;
@@ -95,6 +92,7 @@ inline int good;  // flights that left on time and at the proper apron
 inline int ok;    // flights that left on time OR from the proper apron
 inline int bad;   // flights that were late AND from the wrong gate
 inline optional<int> selected_flight;
+inline optional<int> hovered_flight;
 inline optional<int> selected_apron;
 inline mt19937 gen;
 inline uniform_int_distribution<int> flight_num_gen;

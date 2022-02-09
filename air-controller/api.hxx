@@ -38,11 +38,15 @@ bool ACSceneDone();
 namespace feeder {
 void generateFlightSetA();
 void updateTime();
-void updateFlights();          // flight data is updated here
-void setFlightSelect(int id);  // flip the slight select state
-void setFlightSelect(int id, bool state);
-void setFlightHover(int id, bool state);
+void updateFlights();                    // flight data is updated here
+void setFlightSelect(optional<int> id);  // flip the slight select state
+/* void setFlightSelect(int id, bool state); */
+void setFlightHover(optional<int> id);
+void setApronSelect(optional<int> id);
 void selectApron(int id);
+void setApronActive(int id);
+void setApronFlight(int id, int flight_id);
+void setFlightStatus(int id, data::PlaneStatus);
 }  // namespace feeder
 namespace observer {
 void drawBackground();

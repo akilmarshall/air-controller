@@ -11,10 +11,7 @@
 namespace control {
 namespace state {
 void loadTextures();
-/* inline void loadBG() { */
-/*     data::textures["ito"] = LoadTexture("resources/ito.png"); */
-/* } */
-inline Texture2D getBG() { return data::textures["ito"]; }
+inline Texture2D getBG() { return data::textures["ito"]; }  // this is a query
 inline void unloadTextures() {
     for (auto &[k, v] : data::textures) {
         UnloadTexture(v);

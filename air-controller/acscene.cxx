@@ -29,6 +29,9 @@ void api::scene::ACSceneInit() {
     data::ACScene::score_fontsize = 20;
     data::ACScene::highlight = GOLD;
     data::ACScene::apron_count = 3;
+    for (int i = 0; i < data::ACScene::apron_count; ++i) {
+        data::aprons.push_back(data::Apron{.id = i, .active = false});
+    }
 
     // initialize random stuff once
     data::ACScene::flight_number_range = make_pair(100, 999);

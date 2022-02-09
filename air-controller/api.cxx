@@ -101,25 +101,19 @@ void api::feeder::generateFlightSetA() {
                      .arrival_time = 75 * data::ACScene::MIN,
                      .departure_time = 175 * data::ACScene::MIN,
                      .apron_id = 0,
-                     .status = data::PRE,
-                     .selected = false,
-                     .hovered = false});
+                     .status = data::PRE});
     data::flights.push_back(
         data::Flight{.id = 2,
                      .arrival_time = 105 * data::ACScene::MIN,
                      .departure_time = 205 * data::ACScene::MIN,
                      .apron_id = 1,
-                     .status = data::PRE,
-                     .selected = false,
-                     .hovered = false});
+                     .status = data::PRE});
     data::flights.push_back(
         data::Flight{.id = 3,
                      .arrival_time = 130 * data::ACScene::MIN,
                      .departure_time = 230 * data::ACScene::MIN,
                      .apron_id = 2,
-                     .status = data::PRE,
-                     .selected = false,
-                     .hovered = false});
+                     .status = data::PRE});
 }
 void api::feeder::updateTime() {
     auto x = (data::ACScene::frame_counter + 1) % data::ACScene::MIN;
@@ -151,40 +145,41 @@ void api::feeder::updateFlights() {
         }
     }
 }
-void api::feeder::setFlightSelect(int id, bool state) {
-    // set the selected status for the flight with id
-    // iterate each flight and set its select status
-    for (auto &flight : data::flights) {
-        if (flight.id == id) {
-            flight.selected = state;
-        }
-    }
+void api::feeder::setFlightSelect(optional<int> id) {
+    data::ACScene::selected_flight = id;
 }
-void api::feeder::setFlightSelect(int id) {
-    // set the selected status for the flight with id
-    // iterate each flight and set its select status
-    for (auto &flight : data::flights) {
-        if (flight.id == id) {
-            flight.selected = !flight.selected;
-        }
-    }
+void api::feeder::setFlightHover(optional<int> id) {
+    data::ACScene::hovered_flight = id;
 }
-void api::feeder::setFlightHover(int id, bool state) {
-    // set the hovered status for the flight with id
-    // iterate each flight and set its hovered status
-    for (auto &flight : data::flights) {
-        /* flight.hovered = (flight.id == id); */
-        if (flight.id == id) {
-            flight.hovered = state;
-            return;
-        }
-    }
+void api::feeder::setApronSelect(optional<int> id) {
+    data::ACScene::selected_apron = id;
 }
-void api::feeder::selectApron(int id) {
-    // set the selected status for the apron with id
-    // iterate the aprons and modify the state of only 1 or fewer aprons
+/* void selectApron(int id) { */
+/*     for (auto &apron : data::aprons) { */
+/*         if (apron.id == id) { */
+/*             apron. */
+/*         } */
+/*     } */
+/* } */
+void api::feeder::setApronActive(int id) {
     for (auto &apron : data::aprons) {
-        apron.selected = (apron.id == id);
+        if (apron.id == id) {
+            apron.active = !apron.active;
+        }
+    }
+}
+void api::feeder::setApronFlight(int id, int flight_id) {
+    for (auto &apron : data::aprons) {
+        if (apron.id == id) {
+            apron.flight_id = flight_id;
+        }
+    }
+}
+void api::feeder::setFlightStatus(int id, data::PlaneStatus status) {
+    for (auto &flight : data::flights) {
+        if (flight.id == id) {
+            flight.status = status;
+        }
     }
 }
 // observers
@@ -222,39 +217,31 @@ void api::observer::drawButtons() {
 void api::observer::drawFlights() {
     for (auto &[flight_id, pos] : logic::derived::arielPositions()) {
         auto source =
-            Rectangle{0.f, 0.f, (float)logic::pure::planeSpriteWidth(),
-                      (float)logic::pure::planeSpriteHeight()};
+            Rectangle{0.f, 0.f, (float)logic::pure::planeTextureWidth(),
+                      (float)logic::pure::planeTextureHeight()};
         auto dest =
-            Rectangle{pos.x, pos.y, (float)logic::pure::planeSpriteWidth(),
-                      (float)logic::pure::planeSpriteHeight()};
-        auto flight = logic::pure::queryFlight(flight_id);
+            Rectangle{pos.x, pos.y, (float)logic::pure::planeTextureWidth(),
+                      (float)logic::pure::planeTextureHeight()};
         auto flight_texture = logic::pure::queryFlightTexture(flight_id);
         if (flight_texture) {
-            if (flight) {
-                if (flight.value().selected || flight.value().hovered) {
-                    auto s = 2;
-                    auto dest_scaled = Rectangle{dest};
-                    dest_scaled.x -= dest.width * s / 2;
-                    dest_scaled.y -= dest.height * s / 2;
-                    dest_scaled.height *= s;
-                    dest_scaled.width *= s;
-                    DrawTexturePro(
-                        flight_texture.value(), source, dest_scaled, Vector2{},
-                        /* Vector2{logic::pure::planeSpriteWidth() / 2.f, */
-                        /*         logic::pure::planeSpriteHeight() / 2.f}, */
-                        0.f, flight->selected ? GOLD : WHITE);
-                } else {
-                    DrawTexturePro(
-                        flight_texture.value(), source, dest,
-                        Vector2{logic::pure::planeSpriteWidth() / 2.f,
-                                logic::pure::planeSpriteHeight() / 2.f},
-                        0.f, WHITE);
-                }
+            if (data::ACScene::selected_flight ||
+                data::ACScene::hovered_flight) {
+                auto s = 2;
+                auto dest_scaled = Rectangle{dest};
+                dest_scaled.x -= dest.width * s / 2;
+                dest_scaled.y -= dest.height * s / 2;
+                dest_scaled.height *= s;
+                dest_scaled.width *= s;
+                DrawTexturePro(
+                    flight_texture.value(), source, dest_scaled, Vector2{},
+                    /* Vector2{logic::pure::planeSpriteWidth() / 2.f, */
+                    /*         logic::pure::planeSpriteHeight() / 2.f}, */
+                    0.f, data::ACScene::selected_flight ? GOLD : WHITE);
             } else {
-                // draw default graphics
-                DrawRectangleLinesEx(dest, 2.0f, ORANGE);
-                DrawText(std::to_string(flight_id).c_str(), dest.x, dest.y, 20,
-                         RED);
+                DrawTexturePro(flight_texture.value(), source, dest,
+                               Vector2{logic::pure::planeTextureWidth() / 2.f,
+                                       logic::pure::planeTextureHeight() / 2.f},
+                               0.f, WHITE);
             }
         } else {
             // draw default graphics
@@ -281,28 +268,29 @@ void api::observer::drawSelectFlightInfo() {
     auto max_width = max(widths[1], max(widths[2], widths[3]));
     auto shadow =
         Rectangle{col - max_width - 10, row1 - 10, max_width * 2.1f, 110.f};
-
-    for (auto &flight : data::flights) {
-        if (flight.selected) {
+    if (data::ACScene::selected_flight) {
+        auto flight =
+            logic::pure::queryFlight(data::ACScene::selected_flight.value());
+        if (flight) {
             DrawRectangleRounded(shadow, 0.4f, 100, Fade(DARKGRAY, 0.8f));
             DrawText(flight_, col - widths[0], row1, fontsize, GOLD);
             DrawText(arrive, col - widths[1], row2, fontsize, GOLD);
             DrawText(depart, col - widths[2], row3, fontsize, GOLD);
             DrawText(gate, col - widths[3], row4, fontsize, GOLD);
-            auto x = logic::pure::minuteToDigits(flight.arrival_time /
+            auto x = logic::pure::minuteToDigits(flight.value().arrival_time /
                                                  data::ACScene::MIN);
             auto [a, b, c, d] = x;
-            auto y = logic::pure::minuteToDigits(flight.departure_time /
+            auto y = logic::pure::minuteToDigits(flight.value().departure_time /
                                                  data::ACScene::MIN);
             auto [l, m, n, o] = y;
-            DrawText(TextFormat("%i", flight.id), col + 10, row1, fontsize,
-                     GOLD);
+            DrawText(TextFormat("%i", flight.value().id), col + 10, row1,
+                     fontsize, GOLD);
             DrawText(TextFormat("%i%i:%i%i", a, b, c, d), col + 10, row2,
                      fontsize, GOLD);
             DrawText(TextFormat("%i%i:%i%i", l, m, n, o), col + 10, row3,
                      fontsize, GOLD);
-            DrawText(TextFormat("%i", flight.apron_id + 1), col + 10, row4,
-                     fontsize, GOLD);
+            DrawText(TextFormat("%i", flight.value().apron_id + 1), col + 10,
+                     row4, fontsize, GOLD);
         }
     }
 }
@@ -314,27 +302,29 @@ void api::observer::drawAprons() {
         } else {
             // draw default graphics
             DrawRectangleLinesEx(pos, 2.0f, RED);
-            DrawText(std::to_string(apron_id + 1).c_str(), pos.x, pos.y, 20,
-                     RED);
+            DrawText(std::to_string(apron_id + 1).c_str(), pos.x + 10,
+                     pos.y + 10, 20, RED);
         }
     }
+    Color c = WHITE;
     for (auto &[apron_id, pos] : logic::derived::apronFlagPositions()) {
         auto apron = logic::pure::queryApron(apron_id);
         if (apron) {
             auto texture = logic::pure::queryFlagTexture(apron_id);
-            if (texture) {
+            // if (texture) {
+            if (data::textures.contains("flag")) {
                 Color c;
                 if (apron.value().active) {
                     c = WHITE;
                 } else {
                     c = DARKPURPLE;
                 }
-                DrawTexture(texture.value(), pos.x, pos.y, c);
+                DrawTexture(data::textures["flag"], pos.x - 10, pos.y, c);
             } else {
                 // draw default graphics
                 DrawRectangleLinesEx(pos, 2.f, RED);
-                DrawText(apron.value().active ? "on" : "off", pos.x, pos.y, 20,
-                         RED);
+                DrawText(apron.value().active ? "on" : "off", pos.x + 10,
+                         pos.y + 10, 20, RED);
             }
         }
     }
@@ -347,28 +337,28 @@ void api::observer::drawClock() {
     int b = data::ACScene::hour % 10;
     int c = data::ACScene::minute / 10;
     int d = data::ACScene::minute % 10;
-    auto source = Rectangle{0.f, 0.f, logic::pure::digitSpriteWidth(),
-                            logic::pure::digitSpriteHeight()};
+    auto source = Rectangle{0.f, 0.f, logic::pure::digitTextureWidth(),
+                            logic::pure::digitTextureHeight()};
     auto dest_a = Rectangle{data::ACScene::clock_position.x -
-                                (2 * logic::pure::digitSpriteWidth()) - 8,
+                                (2 * logic::pure::digitTextureWidth()) - 8,
                             data::ACScene::clock_position.y,
-                            s * logic::pure::digitSpriteWidth(),
-                            s * logic::pure::digitSpriteHeight()};
+                            s * logic::pure::digitTextureWidth(),
+                            s * logic::pure::digitTextureHeight()};
     auto dest_b = Rectangle{data::ACScene::clock_position.x -
-                                (1 * logic::pure::digitSpriteWidth()) - 2,
+                                (1 * logic::pure::digitTextureWidth()) - 2,
                             data::ACScene::clock_position.y,
-                            s * logic::pure::digitSpriteWidth(),
-                            s * logic::pure::digitSpriteHeight()};
+                            s * logic::pure::digitTextureWidth(),
+                            s * logic::pure::digitTextureHeight()};
     auto dest_c = Rectangle{data::ACScene::clock_position.x +
-                                (1 * logic::pure::digitSpriteWidth()) + 2,
+                                (1 * logic::pure::digitTextureWidth()) + 2,
                             data::ACScene::clock_position.y,
-                            s * logic::pure::digitSpriteWidth(),
-                            s * logic::pure::digitSpriteHeight()};
+                            s * logic::pure::digitTextureWidth(),
+                            s * logic::pure::digitTextureHeight()};
     auto dest_d = Rectangle{data::ACScene::clock_position.x +
-                                (2 * logic::pure::digitSpriteWidth()) + 8,
+                                (2 * logic::pure::digitTextureWidth()) + 8,
                             data::ACScene::clock_position.y,
-                            s * logic::pure::digitSpriteWidth(),
-                            s * logic::pure::digitSpriteHeight()};
+                            s * logic::pure::digitTextureWidth(),
+                            s * logic::pure::digitTextureHeight()};
     auto texture_a = logic::pure::queryDigitTexture(a);
     auto texture_b = logic::pure::queryDigitTexture(b);
     auto texture_c = logic::pure::queryDigitTexture(c);
@@ -376,8 +366,8 @@ void api::observer::drawClock() {
     auto default_draw = [&](Rectangle d) { DrawRectangleLinesEx(d, 2.f, RED); };
     if (texture_a) {
         DrawTexturePro(texture_a.value(), source, dest_a,
-                       Vector2{logic::pure::digitSpriteWidth() / 2,
-                               logic::pure::digitSpriteHeight() / 2},
+                       Vector2{logic::pure::digitTextureWidth() / 2,
+                               logic::pure::digitTextureHeight() / 2},
                        0.f, WHITE);
     } else {
         // draw default graphics
@@ -387,8 +377,8 @@ void api::observer::drawClock() {
     }
     if (texture_b) {
         DrawTexturePro(texture_b.value(), source, dest_b,
-                       Vector2{logic::pure::digitSpriteWidth() / 2,
-                               logic::pure::digitSpriteHeight() / 2},
+                       Vector2{logic::pure::digitTextureWidth() / 2,
+                               logic::pure::digitTextureHeight() / 2},
                        0.f, WHITE);
     } else {
         // draw default graphics
@@ -398,8 +388,8 @@ void api::observer::drawClock() {
     }
     if (texture_c) {
         DrawTexturePro(texture_c.value(), source, dest_c,
-                       Vector2{logic::pure::digitSpriteWidth() / 2,
-                               logic::pure::digitSpriteHeight() / 2},
+                       Vector2{logic::pure::digitTextureWidth() / 2,
+                               logic::pure::digitTextureHeight() / 2},
                        0.f, WHITE);
     } else {
         // draw default graphics
@@ -409,8 +399,8 @@ void api::observer::drawClock() {
     }
     if (texture_d) {
         DrawTexturePro(texture_d.value(), source, dest_d,
-                       Vector2{logic::pure::digitSpriteWidth() / 2,
-                               logic::pure::digitSpriteHeight() / 2},
+                       Vector2{logic::pure::digitTextureWidth() / 2,
+                               logic::pure::digitTextureHeight() / 2},
                        0.f, WHITE);
     } else {
         // draw default graphics
@@ -420,20 +410,20 @@ void api::observer::drawClock() {
     }
     DrawTexturePro(data::textures["odot"], source,
                    Rectangle{data::ACScene::clock_position.x +
-                                 (logic::pure::digitSpriteWidth() / 2),
+                                 (logic::pure::digitTextureWidth() / 2),
                              data::ACScene::clock_position.y - 6,
-                             logic::pure::digitSpriteWidth() * 2,
-                             logic::pure::digitSpriteHeight() * 2},
-                   Vector2{logic::pure::digitSpriteWidth(),
-                           logic::pure::digitSpriteHeight()},
+                             logic::pure::digitTextureWidth() * 2,
+                             logic::pure::digitTextureHeight() * 2},
+                   Vector2{logic::pure::digitTextureWidth(),
+                           logic::pure::digitTextureHeight()},
                    0.f, WHITE);
     DrawTexturePro(data::textures["odot"], source,
                    Rectangle{data::ACScene::clock_position.x,
                              data::ACScene::clock_position.y + 2,
-                             logic::pure::digitSpriteWidth() * 2,
-                             logic::pure::digitSpriteHeight() * 2},
-                   Vector2{logic::pure::digitSpriteWidth() / 2,
-                           logic::pure::digitSpriteHeight() / 2},
+                             logic::pure::digitTextureWidth() * 2,
+                             logic::pure::digitTextureHeight() * 2},
+                   Vector2{logic::pure::digitTextureWidth() / 2,
+                           logic::pure::digitTextureHeight() / 2},
                    0.f, WHITE);
 }
 void api::observer::drawScore() {
@@ -492,8 +482,8 @@ void api::observer::drawSchedule() {
                     } else {
                         // draw default graphics
                         DrawRectangleLines(
-                            col1 + 30, yi - 8, logic::pure::planeSpriteWidth(),
-                            logic::pure::planeSpriteHeight(), RED);
+                            col1 + 30, yi - 8, logic::pure::planeTextureWidth(),
+                            logic::pure::planeTextureHeight(), RED);
                     }
                     // draw flight number
                     DrawText(std::to_string(flight.id).c_str(), col1 + 40, yi,
@@ -518,9 +508,9 @@ void api::observer::drawSchedule() {
                                  yi, 20, GOLD);
                     } else if (flight.status == data::APRON) {
                         // TODO
-                        // check if flight schedule apron is the apron it was
-                        // parked at inform the player what the game thinks
-                        // about their decision :)
+                        // check if flight schedule apron is the apron it
+                        // was parked at inform the player what the game
+                        // thinks about their decision :)
                     }
                     auto hover_area =
                         Rectangle{data::ACScene::schedule_area.x, yi - 4,

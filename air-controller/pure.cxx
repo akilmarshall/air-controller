@@ -43,8 +43,8 @@ vector<pair<int, Rectangle>> logic::derived::arielPositions() {
         auto y =
             data::ACScene::air.y + (data::ACScene::air_radius * sinf(theta));
         out.push_back(make_pair(
-            id, Rectangle{x, y, (float)logic::pure::planeSpriteWidth(),
-                          (float)logic::pure::planeSpriteHeight()}));
+            id, Rectangle{x, y, (float)logic::pure::planeTextureWidth(),
+                          (float)logic::pure::planeTextureHeight()}));
         ++i;
     }
     return out;
@@ -52,32 +52,32 @@ vector<pair<int, Rectangle>> logic::derived::arielPositions() {
 vector<pair<int, Rectangle>> logic::derived::apronPositions() {
     vector<pair<int, Rectangle>> out{};
     for (int i = 0; i < data::ACScene::apron_count; ++i) {
-        auto x = data::ACScene::apron_position.x + (i * 25);
-        auto y = data::ACScene::apron_position.y - (i * 50);
-        auto w = logic::pure::apronSpriteWidth();
-        auto h = logic::pure::apronSpriteHeight();
-        out.push_back(make_pair(i, Rectangle{x, y, (float)w, (float)h}));
+        float x = data::ACScene::apron_position.x + (i * 25);
+        float y = data::ACScene::apron_position.y - (i * 50);
+        float w = logic::pure::apronTextureWidth();
+        float h = logic::pure::apronTextureHeight();
+        out.push_back(make_pair(i, Rectangle{x, y, w, h}));
     }
     return out;
 }
 vector<pair<int, Rectangle>> logic::derived::apronFlagPositions() {
     vector<pair<int, Rectangle>> out{};
     for (auto [id, area] : apronPositions()) {
-        area.x -= logic::pure::flagSpriteWidth();
-        area.width = logic::pure::flagSpriteWidth();
-        area.height = logic::pure::flagSpriteHeight();
+        area.x -= logic::pure::flagTextureWidth();
+        area.width = logic::pure::flagTextureWidth();
+        area.height = logic::pure::flagTextureHeight();
         out.push_back(make_pair(id, area));
     }
     return out;
 }
-int logic::pure::planeSpriteWidth() { return 32; }
-int logic::pure::planeSpriteHeight() { return 32; }
-int logic::pure::apronSpriteWidth() { return 32; }
-int logic::pure::apronSpriteHeight() { return 32; }
-int logic::pure::flagSpriteWidth() { return 16; }
-int logic::pure::flagSpriteHeight() { return 16; }
-float logic::pure::digitSpriteWidth() { return 16; }
-float logic::pure::digitSpriteHeight() { return 16; }
+int logic::pure::planeTextureWidth() { return 32; }
+int logic::pure::planeTextureHeight() { return 32; }
+int logic::pure::apronTextureWidth() { return 32; }
+int logic::pure::apronTextureHeight() { return 32; }
+int logic::pure::flagTextureWidth() { return 16; }
+int logic::pure::flagTextureHeight() { return 16; }
+float logic::pure::digitTextureWidth() { return 16; }
+float logic::pure::digitTextureHeight() { return 16; }
 
 Texture2D logic::pure::backgroundTextureACScene() {
     return data::textures["ito"];
@@ -109,8 +109,9 @@ optional<data::Apron> logic::pure::queryApronFlightId(int flight_id) {
     return {};
 }
 optional<Texture2D> logic::pure::queryFlightTexture(int id) {
-    if (data::textures.contains(TextFormat("plane%i", id))) {
-        return data::textures[TextFormat("plane%i", id)];
+    auto s = TextFormat("plane%i", id);
+    if (data::textures.contains(s)) {
+        return data::textures[s];
     }
     return {};
 }
