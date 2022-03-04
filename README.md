@@ -6,7 +6,7 @@
 
 Play as an air traffic controller. Aim to move aircraft through your airport as efficiently as possible.
 
-Made for the [raylib 5k game jam](https://itch.io/jam/raylib-5k-gamejam).
+Originally made for the [raylib 5k game jam](https://itch.io/jam/raylib-5k-gamejam).
 
 [game link](https://akilmarshall.itch.io/air-controller)
 
