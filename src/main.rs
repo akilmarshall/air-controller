@@ -1,4 +1,5 @@
 mod credit;
+mod db;
 mod engine;
 mod game;
 mod menu;
@@ -10,9 +11,9 @@ use macroquad::prelude::*;
 
 fn conf() -> Conf {
     Conf {
-        window_title: engine::TITLE.to_owned(),
-        window_width: engine::WIDTH as i32,
-        window_height: engine::HEIGHT as i32,
+        window_title: engine::title().to_owned(),
+        window_width: engine::window_width() as i32,
+        window_height: engine::window_height() as i32,
         ..Default::default()
     }
 }
@@ -20,9 +21,12 @@ fn conf() -> Conf {
 #[macroquad::main(conf)]
 async fn main() {
     unsafe {
-        engine::init(engine::Scene::Splash).await;
+        let mut engine = engine::Engine::new();
+        engine.init(engine::Scene::Splash);
+        // engine::init(engine::Scene::Splash).await;
         loop {
-            engine::step().await;
+            engine.step().await;
+            // engine::step().await;
             next_frame().await
         }
     }

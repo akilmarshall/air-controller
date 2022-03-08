@@ -1,9 +1,11 @@
-use crate::engine::{fade, transition, Scene, HEIGHT, WIDTH};
+use crate::engine::{fade, lerp, transition, Scene, HEIGHT, WIDTH};
 use crate::menu::BG;
 use crate::util::collision;
+use macroquad::math::clamp;
 use macroquad::prelude::*;
 use macroquad::texture::DrawTextureParams;
 use macroquad::ui::*;
+use std::f32::consts::PI;
 
 static mut FRAME_COUNTER: u32 = 0;
 static mut PLANE_TEXTURES: Option<Vec<Texture2D>> = None;
@@ -17,6 +19,22 @@ static mut FLIGHTS: Option<Vec<Flight>> = None;
 static mut GOOD: i32 = 0;
 static mut OK: i32 = 0;
 static mut BAD: i32 = 0;
+static CENTER: (f32, f32) = (125., 125.);
+static RADIUS: f32 = 100.;
+static SPEED: f32 = 0.006;
+
+struct Data {
+    frame_counter: u32,
+    min: u32,
+    schedule_active: bool,
+    flights: Vec<Flight>,
+    good: u32,
+    ok: u32,
+    bad: u32,
+    center: (f32, f32),
+    radius: f32,
+    speed: f32,
+}
 
 #[derive(PartialEq, Eq)]
 enum FlightStatus {
@@ -35,14 +53,57 @@ struct Flight {
     sprite: u32,          // flight texture id
 }
 
+// describe all types of parametric, paths a plane can take
+enum PathType {
+    Holding(u32, u32), //  (i, n), Circular holding path, ith plane of n
+}
+impl PathType {
+    unsafe fn pos(&self) -> (f32, f32) {
+        // implements a parameteric position equation for each PathType
+        match &self {
+            PathType::Holding(i, n) => {
+                // circular holding path
+                let theta: f32 = (SPEED * FRAME_COUNTER as f32)
+                    + (i.to_owned() as f32 * 2. * PI / n.to_owned() as f32);
+                (
+                    CENTER.0 + (RADIUS * theta.cos()),
+                    CENTER.1 + (RADIUS * theta.sin()),
+                )
+            }
+        }
+    }
+}
+struct FlightPath {
+    default: PathType,
+    next: PathType,
+    start: u32,
+    end: u32,
+}
+impl FlightPath {
+    unsafe fn mu(&self) -> f32 {
+        // mu the interpolation parameter
+        // 0 <= mu <= 1
+        let duration = self.end - self.start;
+        let t = self.end - FRAME_COUNTER;
+        clamp(t as f32 / duration as f32, 0., 1.)
+    }
+    unsafe fn pos(&self) -> (f32, f32) {
+        // compute the position by linealy interpolating the default and next positions
+        let d = self.default.pos();
+        let n = self.next.pos();
+        (lerp(d.0, n.0, self.mu()), lerp(d.1, n.1, self.mu()))
+    }
+}
+
 pub async unsafe fn init() {
+    /*
+     */
     FRAME_COUNTER = 0;
     SCHEDULE_ACTIVE = false;
     FLIGHTS = Some(test_flight_set());
     GOOD = 0;
     OK = 0;
     BAD = 0;
-
     match PLANE_TEXTURES {
         Some(_) => {}
         None => {
@@ -241,8 +302,14 @@ unsafe fn draw_score() {
     draw_text(format!("Bad {}", BAD).as_str(), x + 5., y + 45., 20., GOLD);
 }
 
-fn draw_flights() {
-    //
+unsafe fn draw_flights() {
+    if let Some(flights) = &FLIGHTS {
+        for f in flights {
+            if let FlightStatus::Air = f.status {
+                if let Some(planes) = &PLANE_TEXTURES {}
+            }
+        }
+    }
 }
 
 fn test_flight_set() -> Vec<Flight> {
@@ -282,3 +349,17 @@ fn minute_to_digits(min: i32) -> (i32, i32, i32, i32) {
     let d = m % 10;
     (a, b, c, d)
 }
+/*
+unsafe fn arial_flights() -> Vec<Flight> {
+    let out: Vec<Flight> = Vec::new();
+    if let Some(flights) = FLIGHTS.iter() {
+        // return flights.iter().filter(|f| f.status == FlightStatus::Air);
+        for f in flights.iter() {
+            if f.status == FlightStatus::Air {
+                out.push(f);
+            }
+        }
+    }
+    out
+}
+*/
