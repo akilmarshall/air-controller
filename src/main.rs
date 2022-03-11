@@ -20,14 +20,10 @@ fn conf() -> Conf {
 
 #[macroquad::main(conf)]
 async fn main() {
-    unsafe {
-        let mut engine = engine::Engine::new();
-        engine.init(engine::Scene::Splash);
-        // engine::init(engine::Scene::Splash).await;
-        loop {
-            engine.step().await;
-            // engine::step().await;
-            next_frame().await
-        }
+    let mut engine = engine::Engine::new();
+    engine.init(engine::Scene::Splash).await;
+    loop {
+        engine.step();
+        next_frame().await
     }
 }

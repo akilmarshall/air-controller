@@ -1,4 +1,5 @@
 use crate::credit;
+use crate::db::DB;
 use crate::game;
 use crate::menu;
 use crate::splash;
@@ -15,14 +16,18 @@ pub fn window_height() -> f32 {
     600.
 }
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone)]
 pub enum Scene {
-    #[default]
     Splash,
     Menu,
     Game,
     Credit,
     Tutorial,
+}
+impl Default for Scene {
+    fn default() -> Self {
+        Scene::Menu
+    }
 }
 
 #[derive(Default)]
@@ -35,12 +40,17 @@ pub struct Engine {
     from: Scene,
     to: Scene,
     splash: splash::Splash,
+    menu: menu::Menu,
+    game: game::Game,
+    credit: credit::Credit,
+    tutorial: tutorial::Tutorial,
+    resources: DB,
 }
 impl Engine {
     pub fn new() -> Self {
         Default::default()
     }
-    pub unsafe fn init(&mut self, s: Scene) {
+    pub async fn init(&mut self, s: Scene) {
         self.title = title();
         self.current = Scene::Splash;
         self.alpha = 0.;
@@ -48,87 +58,113 @@ impl Engine {
         self.on_transition = true;
         self.from = Scene::Splash;
         self.to = Scene::Splash;
+        self.resources.load_textures().await;
         self.change(s);
     }
-    async unsafe fn init_scene(&mut self) {
+    fn init_scene(&mut self) {
         match self.current {
             Scene::Splash => {
                 self.splash.init();
             }
             Scene::Menu => {
-                menu::init().await;
+                if let Some(bg) = self.resources.bg() {
+                    self.menu.init(bg);
+                }
             }
             Scene::Game => {
-                game::init().await;
+                // holy monad batman
+                if let Some(bg) = self.resources.bg() {
+                    if let Some(flag) = self.resources.flag() {
+                        if let Some(odot) = self.resources.odot() {
+                            if let Some(planes) = self.resources.planes() {
+                                if let Some(digits) = self.resources.digits() {
+                                    self.game.init(bg, flag, odot, planes, digits);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             Scene::Credit => {
-                credit::init();
+                self.credit.init();
             }
             Scene::Tutorial => {
-                tutorial::init();
+                self.tutorial.init();
             }
         }
     }
-    async unsafe fn update_scene(&mut self) {
+    fn update_scene(&mut self) {
         match self.current {
             Scene::Splash => {
                 self.splash.update();
-                if self.splash.done() {
-                    self.transition(self.splash.next());
+                if self.splash.done {
+                    self.transition(self.splash.next);
                 }
             }
             Scene::Menu => {
-                menu::update();
+                self.menu.update();
+                if self.menu.done {
+                    self.transition(self.menu.next);
+                }
             }
             Scene::Game => {
-                game::update();
+                self.game.update();
+                if self.game.done {
+                    self.transition(self.game.next);
+                }
             }
             Scene::Credit => {
-                credit::update();
+                self.credit.update();
+                if self.credit.done {
+                    self.transition(self.credit.next);
+                }
             }
             Scene::Tutorial => {
-                tutorial::update();
+                self.tutorial.update();
+                if self.tutorial.done {
+                    self.transition(self.tutorial.next);
+                }
             }
         }
     }
-    async unsafe fn draw_scene(&self) {
+    fn draw_scene(&self) {
         match self.current {
             Scene::Splash => {
                 self.splash.draw();
             }
             Scene::Menu => {
-                menu::draw().await;
+                self.menu.draw();
             }
             Scene::Game => {
-                game::draw();
+                self.game.draw();
             }
             Scene::Credit => {
-                credit::draw();
+                self.credit.draw();
             }
             Scene::Tutorial => {
-                tutorial::draw();
+                self.tutorial.draw();
             }
         }
     }
-    unsafe fn change(&mut self, s: Scene) {
+    fn change(&mut self, s: Scene) {
         self.current = s;
         self.init_scene();
     }
-    unsafe fn transition(&mut self, s: Scene) {
+    fn transition(&mut self, s: Scene) {
         self.on_transition = true;
         self.fade_out = false;
         self.from = self.current;
         self.to = s;
         self.alpha = 0.;
     }
-    async unsafe fn update_transition(&mut self) {
+    fn update_transition(&mut self) {
         if !self.fade_out {
             self.alpha += 0.05;
             if self.alpha > 1.01 {
                 self.alpha = 1.;
                 self.current = self.to;
                 self.fade_out = true;
-                self.init_scene().await;
+                self.init_scene();
             }
         } else {
             self.alpha -= 0.05;
@@ -148,13 +184,13 @@ impl Engine {
             fade(BLACK, self.alpha),
         );
     }
-    pub async unsafe fn step(&mut self) {
+    pub fn step(&mut self) {
         if !self.on_transition {
             self.update_scene();
         } else {
-            self.update_transition().await;
+            self.update_transition();
         }
-        self.draw_scene().await;
+        self.draw_scene();
         if self.on_transition {
             self.draw_transition();
         }

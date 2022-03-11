@@ -1,6 +1,7 @@
-use crate::engine::Scene;
+use crate::engine::{window_height, Scene};
 use macroquad::prelude::*;
 use macroquad::ui::*;
+use std::rc::Rc;
 
 static TITLE: &str = "Air Controller";
 static TITLE_FONT_SIZE: f32 = 40.;
@@ -9,49 +10,47 @@ static TITLE_FONT_SIZE: f32 = 40.;
 pub struct Menu {
     title: String,
     title_font_size: f32,
-    next: Scene,
+    pub next: Scene,
+    pub done: bool,
+    bg: Option<Rc<Texture2D>>,
 }
 
 impl Menu {
-    fn new() -> Self {
+    async fn new() -> Self {
         Default::default()
     }
-    pub fn init() {}
+    pub fn init(&mut self, bg: Rc<Texture2D>) {
+        self.bg = Some(bg);
+        self.next = Scene::Menu;
+        self.done = false;
+    }
     pub fn update(&mut self) {
         if root_ui().button(Vec2::new(x(), y() + 40.), "Play") {
             self.next = Scene::Game;
+            self.done = true;
         }
         if root_ui().button(Vec2::new(x(), y() + 80.), "Tutorial") {
             self.next = Scene::Tutorial;
+            self.done = true;
         }
         if root_ui().button(Vec2::new(x(), y() + 120.), "Credit") {
             self.next = Scene::Credit;
+            self.done = true;
         }
     }
-    pub fn draw() {
+    pub fn draw(&self) {
         clear_background(WHITE);
-        // how the f do i get the textures from here?
+        if let Some(texture) = &self.bg {
+            draw_texture(**texture, 0., 0., WHITE)
+        }
         draw_text(TITLE, x(), y(), TITLE_FONT_SIZE, GOLD);
     }
 }
 
-pub static mut BG: Option<Texture2D> = None;
-
 fn x() -> f32 {
     50.
 }
-fn y() -> f32 {
-    (HEIGHT / 2.) - 95.
-}
 
-pub async unsafe fn draw() {
-    clear_background(WHITE);
-    match BG {
-        Some(t) => {
-            draw_texture(t, 0., 0., WHITE);
-        }
-        None => {}
-    }
-    // clear_background(WHITE);
-    draw_text(TITLE, x(), y(), TITLE_FONT_SIZE, GOLD);
+fn y() -> f32 {
+    (window_height() / 2.) - 95.
 }

@@ -1,31 +1,39 @@
-use crate::engine::transition;
-use crate::engine::{Scene, HEIGHT, WIDTH};
+use crate::engine::{window_height, window_width, Scene};
 use macroquad::prelude::*;
 
-static T: u32 = 300;
-static mut FRAME_COUNTER: u32 = 0;
-
-pub unsafe fn init() {
-    FRAME_COUNTER = 0;
+#[derive(Default)]
+pub struct Credit {
+    frame_counter: u32,
+    t: u32,
+    pub done: bool,
+    pub next: Scene,
 }
-pub unsafe fn update() {
-    if FRAME_COUNTER > T && is_mouse_button_pressed(MouseButton::Left) {
-        transition(Scene::Menu);
+
+impl Credit {
+    pub fn init(&mut self) {
+        self.t = 100;
+        self.frame_counter = 0;
+        self.done = false;
+        self.next = Scene::Menu;
     }
-    FRAME_COUNTER += 1;
-}
 
-pub unsafe fn draw() {
-    clear_background(WHITE);
-    draw_text("Credits", 40.0, 40.0, 40.0, BLACK);
+    pub fn update(&mut self) {
+        self.done = self.frame_counter > self.t && is_mouse_button_pressed(MouseButton::Left);
+        self.frame_counter += 1;
+    }
 
-    if FRAME_COUNTER > T {
-        draw_text(
-            "left click to continue",
-            WIDTH / 2.0,
-            HEIGHT / 2.0,
-            20.0,
-            GRAY,
-        )
+    pub fn draw(&self) {
+        clear_background(WHITE);
+        draw_text("Credits", 40.0, 40.0, 40.0, BLACK);
+
+        if self.frame_counter > self.t {
+            draw_text(
+                "click to continue",
+                window_width() / 2.0,
+                window_height() / 2.0,
+                20.0,
+                GRAY,
+            )
+        }
     }
 }

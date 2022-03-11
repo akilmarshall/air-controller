@@ -5,6 +5,8 @@ use macroquad::prelude::*;
 pub struct Splash {
     frame_counter: u32,
     t: u32,
+    pub next: Scene,
+    pub done: bool,
 }
 
 impl Splash {
@@ -14,8 +16,11 @@ impl Splash {
     pub fn init(&mut self) {
         self.frame_counter = 0;
         self.t = 300;
+        self.next = Scene::Menu;
+        self.done = false;
     }
     pub fn update(&mut self) {
+        self.done = self.frame_counter > self.t || is_mouse_button_pressed(MouseButton::Left);
         self.frame_counter += 1;
     }
     fn f(
@@ -74,11 +79,5 @@ impl Splash {
             42.,
             RED,
         );
-    }
-    pub fn done(&self) -> bool {
-        self.frame_counter > self.t || is_mouse_button_pressed(MouseButton::Left)
-    }
-    pub fn next(&self) -> Scene {
-        Scene::Menu
     }
 }
